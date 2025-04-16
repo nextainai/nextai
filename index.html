@@ -1,188 +1,270 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEXT AI</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="./styles.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }body.light-mode {
+        background-color: #fff;
+        color: #000;
+    }
+
+    body.dark-mode {
+        background-color: #121212;
+        color: #f0f0f0;
+    }
+
+    .top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 15px 20px;
+        font-size: 1.5em;
+        font-weight: bold;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 1000;
+    }
+
+    .chat-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        margin-top: 60px;
+        margin-bottom: 60px;
+        overflow: hidden;
+    }
+
+    .chat-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        scroll-behavior: smooth;
+    }
+
+    .message {
+        display: flex;
+        align-items: flex-end;
+        margin: 10px 0;
+        max-width: 80%;
+    }
+
+    .message.user {
+        align-self: flex-end;
+        flex-direction: row-reverse;
+    }
+
+    .bubble {
+        padding: 10px 15px;
+        border-radius: 20px;
+        word-wrap: break-word;
+        background-color: #f0f0f0;
+        color: #000;
+        box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .message.user .bubble {
+        background-color: #007BFF;
+        color: #fff;
+    }
+
+    .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin: 0 10px;
+    }
+
+    .bottom-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+        box-shadow: 0px -2px 2px rgba(0, 0, 0, 0.1);
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+    }
+
+    .bottom-bar input {
+        flex: 1;
+        padding: 10px 15px;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        border-radius: 20px;
+        font-size: 1em;
+        margin-right: 10px;
+    }
+
+    .bottom-bar button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 20px;
+        font-size: 1em;
+        background-color: #007BFF;
+        color: #fff;
+        cursor: pointer;
+    }
+
+    .loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 15px;
+        border-radius: 20px;
+        max-width: 40%;
+    }
+
+    .dots {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .dot {
+        width: 8px;
+        height: 8px;
+        background-color: #000;
+        border-radius: 50%;
+        animation: blink 1.4s infinite;
+    }
+
+    .dot:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .dot:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+
+    @keyframes blink {
+        0%, 80%, 100% { opacity: 0; }
+        40% { opacity: 1; }
+    }
+</style>
+
 </head>
-<body>
-    <!-- Top Bar -->
+<body class="light-mode">
     <div class="top-bar">
         NEXT-1
-    </div>
+        <button id="mode-toggle" style="font-size: 0.7em; background: none; border: none; cursor: pointer;">
+            <i class="fas fa-moon"></i>
+        </button>
+    </div><div class="chat-container">
+    <div id="chat-content" class="chat-content"></div>
+</div>
 
-    <!-- Chat Area -->
-    <div class="chat-container">
-        <div id="chat-content" class="chat-content">
-            <!-- Messages will appear here -->
-        </div>
-    </div>
+<form id="chat-form" class="bottom-bar">
+    <input id="user-input" type="text" placeholder="Type your message..." autocomplete="off">
+    <button type="submit">Send</button>
+</form>
 
-    <!-- Bottom Bar -->
-    <form id="chat-form" class="bottom-bar">
-        <input id="user-input" type="text" placeholder="Type your message..." autocomplete="off">
-        <button type="submit">Send</button>
-    </form>
+<script>
+    const chatContent = document.getElementById("chat-content");
+    const chatForm = document.getElementById("chat-form");
+    const userInput = document.getElementById("user-input");
+    const modeToggle = document.getElementById("mode-toggle");
 
-    <script>
-        // Debug logging with timestamp
-        function log(message) {
-            console.log(`[${new Date().toISOString()}] ${message}`);
+    const userLogo = "https://i.ibb.co/ssQNvBC/67373290.jpg";
+    const botLogo = "https://i.ibb.co/Z6dDQpwx/ncizgz.jpg";
+
+    function scrollToBottom() {
+        chatContent.scrollTop = chatContent.scrollHeight;
+    }
+
+    function createMessageElement(message, fromUser, isLoading = false) {
+        const wrapper = document.createElement("div");
+        wrapper.className = `message ${fromUser ? 'user' : 'bot'}`;
+
+        const avatar = document.createElement("img");
+        avatar.src = fromUser ? userLogo : botLogo;
+        avatar.className = "avatar";
+
+        const bubble = document.createElement("div");
+        bubble.className = isLoading ? "loading" : "bubble";
+        bubble.innerHTML = isLoading ? `<div class='dots'><div class='dot'></div><div class='dot'></div><div class='dot'></div></div>` : message;
+
+        wrapper.appendChild(fromUser ? bubble : avatar);
+        wrapper.appendChild(fromUser ? avatar : bubble);
+
+        return wrapper;
+    }
+
+    async function typeText(element, text) {
+        element.innerHTML = '';
+        for (let char of text) {
+            element.innerHTML += char;
+            scrollToBottom();
+            await new Promise(r => setTimeout(r, 10));
         }
+    }
 
-        // Get DOM elements
-        const chatContent = document.getElementById("chat-content");
-        const chatForm = document.getElementById("chat-form");
-        const userInput = document.getElementById("user-input");
-
-        if (!chatContent) {
-            log("Error: chat-content element not found!");
-            document.body.innerHTML = "<h1>Error: Chat content failed to load. Check console.</h1>";
-            throw new Error("Chat content not found");
-        }
-
-        const chatGPTLogo = "https://i.ibb.co/Z6dDQpwx/ncizgz.jpg";
-        const userLogo = "https://i.ibb.co/ssQNvBC/67373290.jpg";
-
-        // Parse markdown with copy buttons
-        function parseMarkdown(text) {
-            text = text.replace(/```([\s\S]*?)```/g, (match, code) => {
-                const codeWithoutLanguage = code.split('\n').slice(1).join('\n');
-                return `
-                    <pre class="code-block">
-                        <code>${escapeHtml(code)}</code>
-                        <button class="copy-button" data-code="${encodeURIComponent(codeWithoutLanguage)}">
-                            <i class="fa fa-copy"></i>
-                        </button>
-                    </pre>`;
+    async function fetchResponse(message) {
+        try {
+            const res = await fetch("https://backend.buildpicoapps.com/aero/run/llm-api?pk=demo", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ prompt: message })
             });
-            text = text.replace(/`([^`]+)`/g, (match, code) => `
-                <code>${escapeHtml(code)}</code>
-                <button class="copy-button-inline" data-code="${encodeURIComponent(code)}">
-                    <i class="fa fa-copy"></i>
-                </button>`);
-            text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-            text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-            text = text.replace(/\n/g, '<br/>');
-            return text;
+            const data = await res.json();
+            return data.text || "No response";
+        } catch {
+            return "Error fetching response.";
         }
+    }
 
-        // Escape HTML characters
-        function escapeHtml(text) {
-            return text
-                .replace(/&/g, "&")
-                .replace(/</g, "<")
-                .replace(/>/g, ">")
-                .replace(/"/g, """)
-                .replace(/'/g, "'");
-        }
+    chatForm.addEventListener("submit", async e => {
+        e.preventDefault();
+        const msg = userInput.value.trim();
+        if (!msg) return;
+        userInput.value = '';
 
-        // Copy to clipboard
-        function copyToClipboard(text, button) {
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            const icon = button.querySelector('i');
-            icon.classList.remove('fa-copy');
-            icon.classList.add('fa-check');
-            setTimeout(() => {
-                icon.classList.remove('fa-check');
-                icon.classList.add('fa-copy');
-            }, 1000);
-        }
+        chatContent.appendChild(createMessageElement(msg, true));
+        const loader = createMessageElement("", false, true);
+        chatContent.appendChild(loader);
+        scrollToBottom();
 
-        document.addEventListener("click", (event) => {
-            const button = event.target.closest('.copy-button, .copy-button-inline');
-            if (button) {
-                const code = decodeURIComponent(button.getAttribute('data-code'));
-                copyToClipboard(code, button);
-            }
-        });
+        const response = await fetchResponse(msg);
+        chatContent.removeChild(loader);
 
-        // Create message element
-        function createMessageElement(message, fromUser, isLoading = false) {
-            const messageWrapper = document.createElement("div");
-            messageWrapper.classList.add("message", fromUser ? "user" : "bot");
+        const wrapper = document.createElement("div");
+        wrapper.className = "message bot";
+        const avatar = document.createElement("img");
+        avatar.src = botLogo;
+        avatar.className = "avatar";
+        const bubble = document.createElement("div");
+        bubble.className = "bubble";
+        wrapper.appendChild(avatar);
+        wrapper.appendChild(bubble);
+        chatContent.appendChild(wrapper);
 
-            const avatar = document.createElement("img");
-            avatar.src = fromUser ? userLogo : chatGPTLogo;
-            avatar.alt = fromUser ? "User" : "ChatGPT";
-            avatar.classList.add("avatar");
+        await typeText(bubble, response);
+    });
 
-            const bubble = document.createElement("div");
-            if (isLoading) {
-                bubble.classList.add("loading");
-                bubble.innerHTML = `<div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
-            } else {
-                bubble.classList.add("bubble");
-                bubble.innerHTML = parseMarkdown(message || "No response from server.");
-            }
+    modeToggle.addEventListener("click", () => {
+        document.body.classList.toggle("dark-mode");
+        document.body.classList.toggle("light-mode");
+        const icon = modeToggle.querySelector("i");
+        icon.classList.toggle("fa-sun");
+        icon.classList.toggle("fa-moon");
+    });
 
-            messageWrapper.appendChild(fromUser ? bubble : avatar);
-            messageWrapper.appendChild(fromUser ? avatar : bubble);
-            return messageWrapper;
-        }
+    window.addEventListener("load", () => {
+        chatContent.appendChild(createMessageElement("How can I help you today?", false));
+        scrollToBottom();
+    });
+</script>
 
-        // Fetch bot response
-        async function fetchResponse(userMessage) {
-            try {
-                log(`Fetching response for: ${userMessage}`);
-                const response = await fetch("https://backend.buildpicoapps.com/aero/run/llm-api?pk=v1-Z0FBQUFBQm5IZkJDMlNyYUVUTjIyZVN3UWFNX3BFTU85SWpCM2NUMUk3T2dxejhLSzBhNWNMMXNzZlp3c09BSTR6YW1Sc1BmdGNTVk1GY0liT1RoWDZZX1lNZlZ0Z1dqd3c9PQ==", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ prompt: userMessage })
-                });
-                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-                const data = await response.json();
-                if (data.status !== "success") throw new Error("Invalid response data");
-                log(`API Success: ${data.text}`);
-                return data.text;
-            } catch (error) {
-                log(`Fetch Error: ${error.message}`);
-                return `Error: ${error.message}. Try again later or check console.`;
-            }
-        }
-
-        // Handle form submission
-        chatForm.addEventListener("submit", async (event) => {
-            event.preventDefault();
-            const userMessage = userInput.value.trim();
-            if (!userMessage) return;
-
-            log(`User input: ${userMessage}`);
-            chatContent.appendChild(createMessageElement(userMessage, true));
-            userInput.value = "";
-
-            const loadingMessage = createMessageElement("", false, true);
-            chatContent.appendChild(loadingMessage);
-            chatContent.scrollTop = chatContent.scrollHeight;
-
-            const botResponse = await fetchResponse(userMessage);
-            chatContent.removeChild(loadingMessage);
-            chatContent.appendChild(createMessageElement(botResponse, false));
-            chatContent.scrollTop = chatContent.scrollHeight;
-        });
-
-        // Welcome message on load
-        window.addEventListener('load', () => {
-            log("Page loaded, adding welcome message...");
-            setTimeout(() => {
-                if (!chatContent.children.length) {
-                    const welcomeMessage = createMessageElement("How can I help you today?", false);
-                    chatContent.appendChild(welcomeMessage);
-                    chatContent.scrollTop = chatContent.scrollHeight;
-                    log("Welcome message added.");
-                }
-            }, 100);
-        });
-
-        // Initial debug
-        log("Initial chat content:", chatContent.innerHTML);
-    </script>
 </body>
 </html>
