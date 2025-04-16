@@ -27,9 +27,19 @@
     </form>
 
     <script>
+        // Debug function to log with timestamp
+        function log(message) {
+            console.log(`[${new Date().toISOString()}] ${message}`);
+        }
+
         const chatContent = document.getElementById("chat-content");
         const chatForm = document.getElementById("chat-form");
         const userInput = document.getElementById("user-input");
+
+        if (!chatContent) {
+            log("Error: chat-content element not found!");
+            document.body.innerHTML = "<h1>Error: Chat content failed to load. Check console.</h1>";
+        }
 
         const botLogo = "https://i.ibb.co/Z6dDQpwx/ncizgz.jpg";
         const userLogo = "https://i.ibb.co/ssQNvBC/67373290.jpg";
@@ -73,7 +83,8 @@
                     icon.classList.remove('fa-check');
                     icon.classList.add('fa-copy');
                 }, 1000);
-            }).catch(() => {
+            }).catch((err) => {
+                log(`Clipboard Error: ${err}`);
                 const textarea = document.createElement('textarea');
                 textarea.value = text;
                 document.body.appendChild(textarea);
@@ -119,7 +130,7 @@
                     </div>`;
             } else {
                 bubble.classList.add("bubble");
-                bubble.innerHTML = parseMarkdown(message || "No response received.");
+                bubble.innerHTML = parseMarkdown(message || "No response from server.");
             }
 
             messageDiv.appendChild(isUser ? bubble : avatar);
@@ -131,6 +142,7 @@
         // Fetch bot response
         async function fetchResponse(userMessage) {
             try {
+                log(`Fetching response for: ${userMessage}`);
                 const response = await fetch("https://backend.buildpicoapps.com/aero/run/llm-api?pk=v1-Z0FBQUFBQm5IZkJDMlNyYUVUTjIyZVN3UWFNX3BFTU85SWpCM2NUMUk3T2dxejhLSzBhNWNMMXNzZlp3c09BSTR6YW1Sc1BmdGNTVk1GY0liT1RoWDZZX1lNZlZ0Z1dqd3c9PQ==", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -138,18 +150,19 @@
                 });
 
                 if (!response.ok) {
-                    console.error("API Error: Response not OK", response.status, response.statusText);
-                    throw new Error("API failed");
+                    log(`API Error: ${response.status} - ${response.statusText}`);
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
                 if (data.status !== "success") {
-                    console.error("API Error: Invalid data", data);
-                    throw new Error("Invalid response");
+                    log(`API Data Error: ${JSON.stringify(data)}`);
+                    throw new Error("Invalid response format");
                 }
+                log(`API Success: ${data.text}`);
                 return data.text;
             } catch (error) {
-                console.error("Fetch Error:", error);
-                return "Sorry, the API isn’t working right now. Check the console or try again later.";
+                log(`Fetch Error: ${error.message}`);
+                return `Error: ${error.message}. Please check the console or try again later.`;
             }
         }
 
@@ -178,35 +191,42 @@
         // Scroll to bottom function
         function scrollToBottom() {
             requestAnimationFrame(() => {
-                chatContent.scrollTop = chatContent.scrollHeight;
+                if (chatContent.scrollHeight > chatContent.clientHeight) {
+                    chatContent.scrollTop = chatContent.scrollHeight;
+                    log(`Scrolled to bottom. Height: ${chatContent.scrollHeight}`);
+                } else {
+                    log(`No scroll needed. Content height: ${chatContent.scrollHeight}, Client height: ${chatContent.clientHeight}`);
+                }
             });
         }
 
         // Mutation observer for dynamic content updates
         const observer = new MutationObserver(() => {
             requestAnimationFrame(() => {
-                chatContent.scrollTop = chatContent.scrollHeight;
+                if (chatContent.scrollHeight > chatContent.clientHeight) {
+                    chatContent.scrollTop = chatContent.scrollHeight;
+                    log(`Mutation triggered scroll. Height: ${chatContent.scrollHeight}`);
+                }
             });
         });
         observer.observe(chatContent, { childList: true, subtree: true });
 
-        // Ensure welcome message and debug initial load
-        window.addEventListener("load", () => {
-            console.log("Page loaded, checking content...");
-            setTimeout(() => {
-                if (!chatContent.children.length) {
-                    console.log("No content found, adding welcome message...");
-                    const welcomeMessage = createMessageElement("Hello! How can I assist you today?", false);
-                    chatContent.appendChild(welcomeMessage);
-                    scrollToBottom();
-                } else {
-                    console.log("Content exists, skipping welcome message.");
-                }
-            }, 500);
+        // Ensure welcome message on DOM content load
+        document.addEventListener("DOMContentLoaded", () => {
+            log("DOM fully loaded, adding welcome message...");
+            if (!chatContent.children.length) {
+                const welcomeMessage = createMessageElement("Hello! How can I assist you today?", false);
+                chatContent.appendChild(welcomeMessage);
+                scrollToBottom();
+                log("Welcome message added.");
+            } else {
+                log("Content exists, skipping welcome message.");
+            }
         });
 
-        // Debug initial content
-        console.log("Initial chat content state:", chatContent.innerHTML);
+        // Debug initial state
+        log("Initial chat content state:", chatContent.innerHTML);
+        log("Initial body state:", document.body.innerHTML);
     </script>
 </body>
 </html>
