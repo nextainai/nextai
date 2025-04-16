@@ -46,17 +46,16 @@ body {
     margin-top: 60px;
     margin-bottom: 60px;
     overflow: hidden;
-    max-height: calc(100vh - 120px); /* Account for top and bottom bars */
+    max-height: calc(100vh - 120px); /* Adjusted for top and bottom bars */
 }
 
-/* Chat Content */
 .chat-content {
     flex: 1;
     overflow-y: auto;
     padding: 20px;
     scroll-behavior: smooth;
-    min-height: 0; /* Allow flex item to shrink */
-    max-height: 100%; /* Ensure it doesn't exceed container */
+    min-height: 0; /* Ensure it can shrink */
+    max-height: 100%; /* Respect container height */
     box-sizing: border-box;
 }
 
