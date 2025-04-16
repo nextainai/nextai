@@ -8,226 +8,26 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <canvas id="particles"></canvas>
-    <div class="top-bar">NEXT-1</div>
+    <!-- Particle Background -->
+    <div id="particles-js"></div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <span class="logo">NEXT-1</span>
+    </div>
+
+    <!-- Chat Area -->
     <div class="chat-container">
         <div id="chat-content" class="chat-content"></div>
     </div>
+
+    <!-- Bottom Bar -->
     <form id="chat-form" class="bottom-bar">
         <input id="user-input" type="text" placeholder="Type your message..." autocomplete="off">
-        <button type="submit">Send</button>
+        <button type="submit" class="send-btn"><i class="fas fa-paper-plane"></i></button>
     </form>
 
-    <script>
-        // Particle Background
-        const canvas = document.getElementById('particles');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        const particles = [];
-        const particleCount = 50;
-
-        class Particle {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 2 + 1;
-                this.speedX = Math.random() * 0.5 - 0.25;
-                this.speedY = Math.random() * 0.5 - 0.25;
-            }
-
-            update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
-                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
-            }
-
-            draw() {
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        function initParticles() {
-            for (let i = 0; i < particleCount; i++) {
-                particles.push(new Particle());
-            }
-        }
-
-        function animateParticles() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(particle => {
-                particle.update();
-                particle.draw();
-            });
-            requestAnimationFrame(animateParticles);
-        }
-
-        initParticles();
-        animateParticles();
-
-        // Chat Functionality
-        const chatContent = document.getElementById("chat-content");
-        const chatForm = document.getElementById("chat-form");
-        const userInput = document.getElementById("user-input");
-
-        const chatGPTLogo = "https://i.ibb.co/Z6dDQpwx/ncizgz.jpg";
-        const userLogo = "https://i.ibb.co/ssQNvBC/67373290.jpg";
-
-        function parseMarkdown(text) {
-            text = text.replace(/```([\s\S]*?)```/g, (match, code) => {
-                const codeWithoutLanguage = code.split('\n').slice(1).join('\n');
-                return `
-                    <pre class="code-block">
-                        <code>${escapeHtml(code)}</code>
-                        <button class="copy-button" data-code="${encodeURIComponent(codeWithoutLanguage)}">
-                            <i class="fa fa-copy"></i>
-                        </button>
-                    </pre>`;
-            });
-
-            text = text.replace(/`([^`]+)`/g, (match, code) => {
-                return `<code class="inline-code">${escapeHtml(code)}</code>
-                        <button class="copy-button-inline" data-code="${encodeURIComponent(code)}">
-                            <i class="fa fa-copy"></i>
-                        </button>`;
-            });
-
-            text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-            text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-            text = text.replace(/\n/g, '<br/>');
-
-            return text;
-        }
-
-        function escapeHtml(text) {
-            return text
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-        }
-
-        function copyToClipboard(text, button) {
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-
-            const icon = button.querySelector('i');
-            icon.classList.remove('fa-copy');
-            icon.classList.add('fa-check');
-            
-            setTimeout(() => {
-                icon.classList.remove('fa-check');
-                icon.classList.add('fa-copy');
-            }, 1000);
-        }
-
-        document.addEventListener("click", (event) => {
-            const button = event.target.closest('.copy-button, .copy-button-inline');
-            if (button) {
-                const code = decodeURIComponent(button.getAttribute('data-code'));
-                copyToClipboard(code, button);
-            }
-        });
-
-        function createMessageElement(message, fromUser, isTyping = false) {
-            const messageWrapper = document.createElement("div");
-            messageWrapper.classList.add("message", fromUser ? "user" : "bot");
-
-            const avatar = document.createElement("img");
-            avatar.src = fromUser ? userLogo : chatGPTLogo;
-            avatar.alt = fromUser ? "User" : "ChatGPT";
-            avatar.classList.add("avatar");
-
-            const bubble = document.createElement("div");
-            if (isTyping) {
-                bubble.classList.add("typing");
-                bubble.innerHTML = `<div class="dots">
-                                    <div class="dot"></div>
-                                    <div class="dot"></div>
-                                    <div class="dot"></div>
-                                </div>`;
-            } else {
-                bubble.classList.add("bubble");
-                bubble.innerHTML = parseMarkdown(message);
-            }
-
-            messageWrapper.appendChild(fromUser ? bubble : avatar);
-            messageWrapper.appendChild(fromUser ? avatar : bubble);
-
-            return messageWrapper;
-        }
-
-        async function fetchResponse(userMessage) {
-            try {
-                const response = await fetch("https://backend.buildpicoapps.com/aero/run/llm-api?pk=v1-Z0FBQUFBQm5IZkJDMlNyYUVUTjIyZVN3UWFNX3BFTU85SWpCM2NUMUk3T2dxejhLSzBhNWNMMXNzZlp3c09BSTR6YW1Sc1BmdGNTVk1GY0liT1RoWDZZX1lNZlZ0Z1dqd3c9PQ==", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ prompt: userMessage })
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to fetch response');
-                }
-
-                const data = await response.json();
-
-                if (data.status === "success") {
-                    return data.text;
-                } else {
-                    throw new Error('Error in response data');
-                }
-            } catch (error) {
-                console.error("Error:", error);
-                return "There was an error. Please try again later.";
-            }
-        }
-
-        chatForm.addEventListener("submit", async (event) => {
-            event.preventDefault();
-
-            const userMessage = userInput.value.trim();
-            if (!userMessage) {
-                return;
-            }
-
-            chatContent.appendChild(createMessageElement(userMessage, true));
-            userInput.value = "";
-
-            const typingMessage = createMessageElement("", false, true);
-            chatContent.appendChild(typingMessage);
-            chatContent.scrollTop = chatContent.scrollHeight;
-
-            const botResponse = await fetchResponse(userMessage);
-
-            chatContent.removeChild(typingMessage);
-            chatContent.appendChild(createMessageElement(botResponse, false));
-            chatContent.scrollTop = chatContent.scrollHeight;
-        });
-
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                const welcomeMessage = createMessageElement("How can I help you today?", false);
-                chatContent.appendChild(welcomeMessage);
-                chatContent.scrollTop = chatContent.scrollHeight;
-            }, 100);
-        });
-
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        });
-    </script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
