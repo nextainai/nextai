@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXT AI Chat</title>
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <title>NEXT AI</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
     <!-- Top Bar -->
     <div class="top-bar">
-        <span>NEXT AI</span>
+        <span>NEXT-1</span>
     </div>
 
     <!-- Chat Area -->
@@ -27,11 +27,12 @@
     </form>
 
     <script>
-        // Debug function to log with timestamp
+        // Debug logging with timestamp
         function log(message) {
             console.log(`[${new Date().toISOString()}] ${message}`);
         }
 
+        // Get DOM elements
         const chatContent = document.getElementById("chat-content");
         const chatForm = document.getElementById("chat-form");
         const userInput = document.getElementById("user-input");
@@ -44,26 +45,30 @@
         const botLogo = "https://i.ibb.co/Z6dDQpwx/ncizgz.jpg";
         const userLogo = "https://i.ibb.co/ssQNvBC/67373290.jpg";
 
-        // Parse markdown
+        // Parse markdown with syntax highlighting and copy buttons
         function parseMarkdown(text) {
             text = text.replace(/```([\s\S]*?)```/g, (match, code) => {
                 const codeWithoutLanguage = code.split('\n').slice(1).join('\n');
                 return `
                     <pre class="code-block">
-                        <code>${escapeHtml(code)}</code>
+                        <code class="code-content">${escapeHtml(code)}</code>
                         <button class="copy-button" data-code="${encodeURIComponent(codeWithoutLanguage)}">
-                            <i class="fa fa-copy"></i>
+                            <i class="fas fa-copy"></i>
                         </button>
                     </pre>`;
             });
-            text = text.replace(/`([^`]+)`/g, `<code class="inline-code">${escapeHtml('$1')}</code>`);
+            text = text.replace(/`([^`]+)`/g, (match, code) => `
+                <code class="inline-code">${escapeHtml(code)}</code>
+                <button class="copy-button-inline" data-code="${encodeURIComponent(code)}">
+                    <i class="fas fa-copy"></i>
+                </button>`);
             text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
             text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
             text = text.replace(/\n/g, '<br>');
             return text;
         }
 
-        // Escape HTML
+        // Escape HTML characters
         function escapeHtml(text) {
             return text
                 .replace(/&/g, "&")
@@ -77,12 +82,8 @@
         function copyToClipboard(text, button) {
             navigator.clipboard.writeText(text).then(() => {
                 const icon = button.querySelector('i');
-                icon.classList.remove('fa-copy');
-                icon.classList.add('fa-check');
-                setTimeout(() => {
-                    icon.classList.remove('fa-check');
-                    icon.classList.add('fa-copy');
-                }, 1000);
+                icon.classList.replace('fa-copy', 'fa-check');
+                setTimeout(() => icon.classList.replace('fa-check', 'fa-copy'), 1000);
             }).catch((err) => {
                 log(`Clipboard Error: ${err}`);
                 const textarea = document.createElement('textarea');
@@ -92,21 +93,14 @@
                 document.execCommand('copy');
                 document.body.removeChild(textarea);
                 const icon = button.querySelector('i');
-                icon.classList.remove('fa-copy');
-                icon.classList.add('fa-check');
-                setTimeout(() => {
-                    icon.classList.remove('fa-check');
-                    icon.classList.add('fa-copy');
-                }, 1000);
+                icon.classList.replace('fa-copy', 'fa-check');
+                setTimeout(() => icon.classList.replace('fa-check', 'fa-copy'), 1000);
             });
         }
 
         document.addEventListener("click", (event) => {
-            const button = event.target.closest('.copy-button');
-            if (button) {
-                const code = decodeURIComponent(button.getAttribute('data-code'));
-                copyToClipboard(code, button);
-            }
+            const button = event.target.closest('.copy-button, .copy-button-inline');
+            if (button) copyToClipboard(decodeURIComponent(button.dataset.code), button);
         });
 
         // Create message element
@@ -122,12 +116,7 @@
             const bubble = document.createElement("div");
             if (isLoading) {
                 bubble.classList.add("loading");
-                bubble.innerHTML = `
-                    <div class="dots">
-                        <div class="dot"></div>
-                        <div class="dot"></div>
-                        <div class="dot"></div>
-                    </div>`;
+                bubble.innerHTML = '<div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
             } else {
                 bubble.classList.add("bubble");
                 bubble.innerHTML = parseMarkdown(message || "No response from server.");
@@ -135,7 +124,6 @@
 
             messageDiv.appendChild(isUser ? bubble : avatar);
             messageDiv.appendChild(isUser ? avatar : bubble);
-
             return messageDiv;
         }
 
@@ -148,21 +136,14 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ prompt: userMessage })
                 });
-
-                if (!response.ok) {
-                    log(`API Error: ${response.status} - ${response.statusText}`);
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
                 const data = await response.json();
-                if (data.status !== "success") {
-                    log(`API Data Error: ${JSON.stringify(data)}`);
-                    throw new Error("Invalid response format");
-                }
+                if (data.status !== "success") throw new Error("Invalid response data");
                 log(`API Success: ${data.text}`);
                 return data.text;
             } catch (error) {
                 log(`Fetch Error: ${error.message}`);
-                return `Error: ${error.message}. Please check the console or try again later.`;
+                return `Error: ${error.message}. Try again later or check console.`;
             }
         }
 
@@ -188,45 +169,31 @@
             scrollToBottom();
         });
 
-        // Scroll to bottom function
+        // Scroll to bottom
         function scrollToBottom() {
             requestAnimationFrame(() => {
-                if (chatContent.scrollHeight > chatContent.clientHeight) {
-                    chatContent.scrollTop = chatContent.scrollHeight;
-                    log(`Scrolled to bottom. Height: ${chatContent.scrollHeight}`);
-                } else {
-                    log(`No scroll needed. Content height: ${chatContent.scrollHeight}, Client height: ${chatContent.clientHeight}`);
-                }
+                chatContent.scrollTop = chatContent.scrollHeight;
+                log(`Scrolled to ${chatContent.scrollHeight}px`);
             });
         }
 
-        // Mutation observer for dynamic content updates
-        const observer = new MutationObserver(() => {
-            requestAnimationFrame(() => {
-                if (chatContent.scrollHeight > chatContent.clientHeight) {
-                    chatContent.scrollTop = chatContent.scrollHeight;
-                    log(`Mutation triggered scroll. Height: ${chatContent.scrollHeight}`);
-                }
-            });
-        });
+        // Mutation observer for dynamic scrolling
+        const observer = new MutationObserver(() => scrollToBottom());
         observer.observe(chatContent, { childList: true, subtree: true });
 
-        // Ensure welcome message on DOM content load
+        // Welcome message on DOM load
         document.addEventListener("DOMContentLoaded", () => {
-            log("DOM fully loaded, adding welcome message...");
+            log("DOM loaded, adding welcome message...");
             if (!chatContent.children.length) {
                 const welcomeMessage = createMessageElement("Hello! How can I assist you today?", false);
                 chatContent.appendChild(welcomeMessage);
                 scrollToBottom();
                 log("Welcome message added.");
-            } else {
-                log("Content exists, skipping welcome message.");
             }
         });
 
-        // Debug initial state
-        log("Initial chat content state:", chatContent.innerHTML);
-        log("Initial body state:", document.body.innerHTML);
+        // Initial debug
+        log("Initial chat content:", chatContent.innerHTML);
     </script>
 </body>
 </html>
