@@ -76,7 +76,6 @@
                     icon.classList.add('fa-copy');
                 }, 1000);
             }).catch(() => {
-                // Fallback for GitHub Pages or non-secure contexts
                 const textarea = document.createElement('textarea');
                 textarea.value = text;
                 document.body.appendChild(textarea);
@@ -155,44 +154,39 @@
             const userMessage = userInput.value.trim();
             if (!userMessage) return;
 
-            chatContent.appendChild(createMessageElement(userMessage, true));
+            const userMessageElement = createMessageElement(userMessage, true);
+            chatContent.appendChild(userMessageElement);
             userInput.value = "";
-            // Force layout recalculation and scroll
-            requestAnimationFrame(() => {
-                chatContent.scrollTop = chatContent.scrollHeight;
-            });
+            scrollToBottom();
 
             const loadingMessage = createMessageElement("", false, true);
             chatContent.appendChild(loadingMessage);
-            // Force layout recalculation and scroll
-            requestAnimationFrame(() => {
-                chatContent.scrollTop = chatContent.scrollHeight;
-            });
+            scrollToBottom();
 
             const botResponse = await fetchResponse(userMessage);
             chatContent.removeChild(loadingMessage);
-            chatContent.appendChild(createMessageElement(botResponse, false));
-            // Force layout recalculation and scroll
-            requestAnimationFrame(() => {
-                chatContent.scrollTop = chatContent.scrollHeight;
-            });
+            const botMessageElement = createMessageElement(botResponse, false);
+            chatContent.appendChild(botMessageElement);
+            scrollToBottom();
         });
 
-        // Ensure scrollability on content changes
+        // Scroll to bottom function
+        function scrollToBottom() {
+            chatContent.scrollTop = chatContent.scrollHeight;
+        }
+
+        // Mutation observer for dynamic content updates
         const observer = new MutationObserver(() => {
-            requestAnimationFrame(() => {
-                chatContent.scrollTop = chatContent.scrollHeight;
-            });
+            scrollToBottom();
         });
         observer.observe(chatContent, { childList: true, subtree: true });
 
         // Initial welcome message
         window.addEventListener("load", () => {
             setTimeout(() => {
-                chatContent.appendChild(createMessageElement("Hello! How can I assist you today?", false));
-                requestAnimationFrame(() => {
-                    chatContent.scrollTop = chatContent.scrollHeight;
-                });
+                const welcomeMessage = createMessageElement("Hello! How can I assist you today?", false);
+                chatContent.appendChild(welcomeMessage);
+                scrollToBottom();
             }, 500);
         });
     </script>
