@@ -139,12 +139,19 @@
                     body: JSON.stringify({ prompt: userMessage })
                 });
 
-                if (!response.ok) throw new Error("Network error");
+                if (!response.ok) {
+                    console.error("API Error: Response not OK", response.status, response.statusText);
+                    throw new Error("API response failed");
+                }
                 const data = await response.json();
-                return data.status === "success" ? data.text : "Error in response";
+                if (data.status !== "success") {
+                    console.error("API Error: Invalid data", data);
+                    throw new Error("Invalid response data");
+                }
+                return data.text;
             } catch (error) {
-                console.error("Error:", error);
-                return "Sorry, something went wrong. Try again later.";
+                console.error("Fetch Error:", error);
+                return "Oops! The API isn’t responding right now. Try again later or check the console for details.";
             }
         }
 
@@ -156,8 +163,8 @@
 
             const userMessageElement = createMessageElement(userMessage, true);
             chatContent.appendChild(userMessageElement);
-            userInput.value = "";
             scrollToBottom();
+            userInput.value = "";
 
             const loadingMessage = createMessageElement("", false, true);
             chatContent.appendChild(loadingMessage);
@@ -181,14 +188,23 @@
         });
         observer.observe(chatContent, { childList: true, subtree: true });
 
-        // Initial welcome message
+        // Ensure welcome message and debug initial load
         window.addEventListener("load", () => {
+            console.log("Page loaded, adding welcome message...");
             setTimeout(() => {
-                const welcomeMessage = createMessageElement("Hello! How can I assist you today?", false);
-                chatContent.appendChild(welcomeMessage);
-                scrollToBottom();
+                if (!chatContent.innerHTML.trim()) {
+                    const welcomeMessage = createMessageElement("Hello! How can I assist you today?", false);
+                    chatContent.appendChild(welcomeMessage);
+                    scrollToBottom();
+                    console.log("Welcome message added.");
+                } else {
+                    console.log("Content already present, skipping welcome message.");
+                }
             }, 500);
         });
+
+        // Debug initial content
+        console.log("Initial chat content:", chatContent.innerHTML);
     </script>
 </body>
 </html>
