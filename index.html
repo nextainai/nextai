@@ -83,14 +83,16 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            margin: 60px 20px;
-            overflow: hidden;
+            width: 100%;
+            height: calc(100% - 120px); /* Adjust for top and bottom bars (60px each) */
+            overflow-y: auto; /* Enable vertical scrolling */
             z-index: 2;
             border: 3px solid transparent;
             border-image: linear-gradient(45deg, #00c6ff, #ff00ff) 1;
-            border-radius: 10px;
+            border-radius: 0; /* Remove rounding for full-edge effect */
             box-shadow: 0 0 25px rgba(0, 198, 255, 0.7);
             animation: borderGlow 2.5s ease-in-out infinite alternate;
+            margin: 0; /* Remove margins for full-screen border */
         }
 
         @keyframes borderGlow {
@@ -231,8 +233,7 @@
             box-shadow: 0 -3px 8px rgba(0, 0, 0, 0.3);
             position: fixed;
             bottom: 0;
-            left: 0;
-            right: 0;
+            width: 100%;
             z-index: 1000;
         }
 
@@ -498,7 +499,8 @@
         // Optimized Auto-Scroll
         function autoScroll() {
             requestAnimationFrame(() => {
-                chatContent.scrollTo({ top: chatContent.scrollHeight, behavior: 'smooth' });
+                const maxScroll = chatContent.scrollHeight - chatContent.clientHeight;
+                chatContent.scrollTo({ top: maxScroll > 0 ? maxScroll : 0, behavior: 'smooth' });
             });
         }
 
