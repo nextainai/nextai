@@ -46,12 +46,10 @@
                         </button>
                     </pre>`;
             });
-
             text = text.replace(/`([^`]+)`/g, `<code class="inline-code">${escapeHtml('$1')}</code>`);
             text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
             text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
             text = text.replace(/\n/g, '<br>');
-
             return text;
         }
 
@@ -121,7 +119,7 @@
                     </div>`;
             } else {
                 bubble.classList.add("bubble");
-                bubble.innerHTML = parseMarkdown(message);
+                bubble.innerHTML = parseMarkdown(message || "No response received.");
             }
 
             messageDiv.appendChild(isUser ? bubble : avatar);
@@ -141,17 +139,17 @@
 
                 if (!response.ok) {
                     console.error("API Error: Response not OK", response.status, response.statusText);
-                    throw new Error("API response failed");
+                    throw new Error("API failed");
                 }
                 const data = await response.json();
                 if (data.status !== "success") {
                     console.error("API Error: Invalid data", data);
-                    throw new Error("Invalid response data");
+                    throw new Error("Invalid response");
                 }
                 return data.text;
             } catch (error) {
                 console.error("Fetch Error:", error);
-                return "Oops! The API isn’t responding right now. Try again later or check the console for details.";
+                return "Sorry, the API isn’t working right now. Check the console or try again later.";
             }
         }
 
@@ -179,32 +177,36 @@
 
         // Scroll to bottom function
         function scrollToBottom() {
-            chatContent.scrollTop = chatContent.scrollHeight;
+            requestAnimationFrame(() => {
+                chatContent.scrollTop = chatContent.scrollHeight;
+            });
         }
 
         // Mutation observer for dynamic content updates
         const observer = new MutationObserver(() => {
-            scrollToBottom();
+            requestAnimationFrame(() => {
+                chatContent.scrollTop = chatContent.scrollHeight;
+            });
         });
         observer.observe(chatContent, { childList: true, subtree: true });
 
         // Ensure welcome message and debug initial load
         window.addEventListener("load", () => {
-            console.log("Page loaded, adding welcome message...");
+            console.log("Page loaded, checking content...");
             setTimeout(() => {
-                if (!chatContent.innerHTML.trim()) {
+                if (!chatContent.children.length) {
+                    console.log("No content found, adding welcome message...");
                     const welcomeMessage = createMessageElement("Hello! How can I assist you today?", false);
                     chatContent.appendChild(welcomeMessage);
                     scrollToBottom();
-                    console.log("Welcome message added.");
                 } else {
-                    console.log("Content already present, skipping welcome message.");
+                    console.log("Content exists, skipping welcome message.");
                 }
             }, 500);
         });
 
         // Debug initial content
-        console.log("Initial chat content:", chatContent.innerHTML);
+        console.log("Initial chat content state:", chatContent.innerHTML);
     </script>
 </body>
 </html>
