@@ -1,21 +1,22 @@
-// Particle.js Configuration
+// Particle.js Configuration (More Vibrant)
 particlesJS("particles-js", {
     particles: {
-        number: { value: 100, density: { enable: true, value_area: 800 } },
-        color: { value: ["#ffffff", "#00c6ff", "#007BFF"] },
-        shape: { type: ["circle", "star", "triangle"], polygon: { nb_sides: 5 } },
-        opacity: { value: 0.6, random: true, anim: { enable: true, speed: 1, opacity_min: 0.1 } },
-        size: { value: 4, random: true, anim: { enable: true, speed: 2, size_min: 0.5 } },
-        line_linked: { enable: true, distance: 120, color: "#ffffff", opacity: 0.5, width: 1.5 },
-        move: { enable: true, speed: 3, direction: "random", random: true, straight: false, out_mode: "out", bounce: false }
+        number: { value: 120, density: { enable: true, value_area: 800 } },
+        color: { value: ["#ffffff", "#00c6ff", "#007BFF", "#ff00ff"] },
+        shape: { type: ["circle", "star", "triangle", "polygon"], polygon: { nb_sides: 6 } },
+        opacity: { value: 0.8, random: true, anim: { enable: true, speed: 1.5, opacity_min: 0.2 } },
+        size: { value: 5, random: true, anim: { enable: true, speed: 3, size_min: 1 } },
+        line_linked: { enable: true, distance: 100, color: "#ffffff", opacity: 0.6, width: 2 },
+        move: { enable: true, speed: 4, direction: "random", random: true, straight: false, out_mode: "out", bounce: false }
     },
     interactivity: {
         detect_on: "canvas",
         events: { onhover: { enable: true, mode: "grab" }, onclick: { enable: true, mode: "push" }, resize: true },
-        modes: { grab: { distance: 150, line_linked: { opacity: 0.7 } }, push: { particles_nb: 5 } }
+        modes: { grab: { distance: 200, line_linked: { opacity: 0.8 } }, push: { particles_nb: 6 } }
     },
     retina_detect: true
 });
+console.log("Particles.js initialized");
 
 const chatContent = document.getElementById("chat-content");
 const chatForm = document.getElementById("chat-form");
@@ -24,7 +25,7 @@ const userInput = document.getElementById("user-input");
 const chatGPTLogo = "https://i.ibb.co/Z6dDQpwx/ncizgz.jpg";
 const userLogo = "https://i.ibb.co/ssQNvBC/67373290.jpg";
 
-// Parse Markdown (Fixed bug)
+// Parse Markdown
 function parseMarkdown(text) {
     text = text.replace(/```([\s\S]*?)```/g, (match, code) => {
         const codeWithoutLanguage = code.split('\n').slice(1).join('\n');
