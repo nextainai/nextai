@@ -1,11 +1,11 @@
-        <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEXT AI Chat</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
     <!-- Top Bar -->
@@ -58,16 +58,31 @@
         // Escape HTML
         function escapeHtml(text) {
             return text
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
+                .replace(/&/g, "&")
+                .replace(/</g, "<")
+                .replace(/>/g, ">")
+                .replace(/"/g, """)
+                .replace(/'/g, "'");
         }
 
         // Copy to clipboard
         function copyToClipboard(text, button) {
             navigator.clipboard.writeText(text).then(() => {
+                const icon = button.querySelector('i');
+                icon.classList.remove('fa-copy');
+                icon.classList.add('fa-check');
+                setTimeout(() => {
+                    icon.classList.remove('fa-check');
+                    icon.classList.add('fa-copy');
+                }, 1000);
+            }).catch(() => {
+                // Fallback for GitHub Pages or non-secure contexts
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
                 const icon = button.querySelector('i');
                 icon.classList.remove('fa-copy');
                 icon.classList.add('fa-check');
@@ -142,23 +157,42 @@
 
             chatContent.appendChild(createMessageElement(userMessage, true));
             userInput.value = "";
-            chatContent.scrollTop = chatContent.scrollHeight;
+            // Force layout recalculation and scroll
+            requestAnimationFrame(() => {
+                chatContent.scrollTop = chatContent.scrollHeight;
+            });
 
             const loadingMessage = createMessageElement("", false, true);
             chatContent.appendChild(loadingMessage);
-            chatContent.scrollTop = chatContent.scrollHeight;
+            // Force layout recalculation and scroll
+            requestAnimationFrame(() => {
+                chatContent.scrollTop = chatContent.scrollHeight;
+            });
 
             const botResponse = await fetchResponse(userMessage);
             chatContent.removeChild(loadingMessage);
             chatContent.appendChild(createMessageElement(botResponse, false));
-            chatContent.scrollTop = chatContent.scrollHeight;
+            // Force layout recalculation and scroll
+            requestAnimationFrame(() => {
+                chatContent.scrollTop = chatContent.scrollHeight;
+            });
         });
+
+        // Ensure scrollability on content changes
+        const observer = new MutationObserver(() => {
+            requestAnimationFrame(() => {
+                chatContent.scrollTop = chatContent.scrollHeight;
+            });
+        });
+        observer.observe(chatContent, { childList: true, subtree: true });
 
         // Initial welcome message
         window.addEventListener("load", () => {
             setTimeout(() => {
                 chatContent.appendChild(createMessageElement("Hello! How can I assist you today?", false));
-                chatContent.scrollTop = chatContent.scrollHeight;
+                requestAnimationFrame(() => {
+                    chatContent.scrollTop = chatContent.scrollHeight;
+                });
             }, 500);
         });
     </script>
