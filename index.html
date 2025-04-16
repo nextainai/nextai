@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEXT AI</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <style>
@@ -84,15 +84,19 @@
             display: flex;
             flex-direction: column;
             width: 100%;
-            height: calc(100% - 120px); /* Adjust for top and bottom bars (60px each) */
-            overflow-y: auto; /* Enable vertical scrolling */
+            height: calc(100vh - 120px); /* Full height minus top and bottom bars */
+            overflow-y: auto; /* Ensure scrolling works */
             z-index: 2;
             border: 3px solid transparent;
             border-image: linear-gradient(45deg, #00c6ff, #ff00ff) 1;
-            border-radius: 0; /* Remove rounding for full-edge effect */
             box-shadow: 0 0 25px rgba(0, 198, 255, 0.7);
             animation: borderGlow 2.5s ease-in-out infinite alternate;
-            margin: 0; /* Remove margins for full-screen border */
+            position: absolute;
+            top: 60px;
+            bottom: 60px; /* Align with fixed bars */
+            left: 0;
+            right: 0;
+            padding: 0; /* Remove any padding to ensure full edge */
         }
 
         @keyframes borderGlow {
@@ -177,6 +181,13 @@
             border-radius: 50%;
             margin: 0 12px;
             box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+            background: #00c6ff; /* Enhanced with a solid color */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #fff;
         }
 
         .message.user .avatar {
@@ -430,10 +441,10 @@
             const messageWrapper = document.createElement("div");
             messageWrapper.classList.add("message", fromUser ? "user" : "bot");
 
-            const avatar = document.createElement("img");
-            avatar.src = fromUser ? userLogo : chatGPTLogo;
-            avatar.alt = fromUser ? "User" : "ChatGPT";
+            const avatar = document.createElement("div"); // Using div for custom styling
             avatar.classList.add("avatar");
+            avatar.style.background = fromUser ? '#00c6ff' : 'linear-gradient(45deg, #00c6ff, #ff00ff)';
+            avatar.innerHTML = fromUser ? 'U' : 'N'; // Initials for user and NEXT AI
 
             const bubble = document.createElement("div");
             if (isLoading) {
@@ -500,7 +511,9 @@
         function autoScroll() {
             requestAnimationFrame(() => {
                 const maxScroll = chatContent.scrollHeight - chatContent.clientHeight;
-                chatContent.scrollTo({ top: maxScroll > 0 ? maxScroll : 0, behavior: 'smooth' });
+                if (maxScroll > 0) {
+                    chatContent.scrollTo({ top: maxScroll, behavior: 'smooth' });
+                }
             });
         }
 
@@ -514,4 +527,4 @@
         });
     </script>
 </body>
-</html>
+</html>            
