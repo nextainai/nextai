@@ -14,7 +14,7 @@
 
         body {
             font-family: 'Arial', sans-serif;
-            background: #1a1a1a; /* Dark theme for a modern look */
+            background: #1a1a1a;
             color: #e0e0e0;
             display: flex;
             flex-direction: column;
@@ -23,7 +23,7 @@
             position: relative;
         }
 
-        /* Classic Graphic: Subtle Nebula Background */
+        /* Nebula Background */
         body::before {
             content: '';
             position: absolute;
@@ -52,16 +52,17 @@
             opacity: 0.4;
         }
 
-        /* Top Bar */
+        /* Top Bar with Centered Logo */
         .top-bar {
             background: rgba(26, 26, 26, 0.9);
             padding: 15px 25px;
             display: flex;
             align-items: center;
-            justify-content: flex-start;
-            font-size: 1.8em;
+            justify-content: center;
+            font-size: 2em;
             font-weight: bold;
             color: #00c6ff;
+            text-shadow: 0 0 10px #00c6ff, 0 0 20px #9600ff;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
             position: fixed;
@@ -170,18 +171,20 @@
             height: 40px;
             border-radius: 50%;
             margin: 0 10px;
-            background: #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2em;
-            color: #00c6ff;
-            text-shadow: 0 0 5px #00c6ff;
         }
 
-        .message.user .avatar {
-            background: #007bff;
-            color: #fff;
+        .message.user .avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .message.bot .avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
         }
 
         /* Loading Animation */
@@ -288,7 +291,7 @@
             font-size: 1em;
             background: linear-gradient(45deg, #00c6ff, #9600ff);
             color: #fff;
-            cursor: gradientPointer;
+            cursor: pointer;
             transition: transform 0.3s;
         }
 
@@ -333,7 +336,7 @@
     <!-- Particle Background -->
     <div id="particles-js"></div>
 
-    <!-- Top Bar -->
+    <!-- Top Bar with Centered Logo -->
     <div class="top-bar">NEXT AI</div>
 
     <!-- Chat Area -->
@@ -372,9 +375,9 @@
         const chatForm = document.getElementById("chat-form");
         const userInput = document.getElementById("user-input");
 
-        const userLogo = "https://i.ibb.co/ssQNvBC/67373290.jpg"; // Reversed for consistency
+        const chatGPTLogo = "https://i.ibb.co/Z6dDQpwx/ncizgz.jpg"; // Bot logo from original code
+        const userLogo = "https://i.ibb.co/ssQNvBC/67373290.jpg"; // User logo from original code
 
-        // Parse Markdown
         function parseMarkdown(text) {
             text = text.replace(/```([\s\S]*?)```/g, (match, code) => {
                 const codeWithoutLanguage = code.split('\n').slice(1).join('\n');
@@ -387,12 +390,10 @@
             return text;
         }
 
-        // Escape HTML
         function escapeHtml(text) {
             return text.replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">").replace(/"/g, "\"").replace(/'/g, "'");
         }
 
-        // Copy to Clipboard
         function copyToClipboard(text, button) {
             const textarea = document.createElement('textarea');
             textarea.value = text;
@@ -409,7 +410,6 @@
             }, 1000);
         }
 
-        // Event Listener for Copy Buttons
         document.addEventListener("click", (event) => {
             const button = event.target.closest('.copy-button, .copy-button-inline');
             if (button) {
@@ -418,15 +418,16 @@
             }
         });
 
-        // Create Message Element
         function createMessageElement(message, fromUser, isLoading = false) {
             const messageWrapper = document.createElement("div");
             messageWrapper.classList.add("message", fromUser ? "user" : "bot");
 
             const avatar = document.createElement("div");
             avatar.classList.add("avatar");
-            avatar.style.background = fromUser ? '#007bff' : '#333';
-            avatar.innerHTML = fromUser ? 'U' : 'N'; // Reversed avatars
+            const img = document.createElement("img");
+            img.src = fromUser ? userLogo : chatGPTLogo;
+            img.alt = fromUser ? "User" : "NEXT AI";
+            avatar.appendChild(img);
 
             const bubble = document.createElement("div");
             if (isLoading) {
@@ -442,7 +443,6 @@
             return messageWrapper;
         }
 
-        // Fetch Response from API
         async function fetchResponse(userMessage) {
             try {
                 const response = await fetch("https://backend.buildpicoapps.com/aero/run/llm-api?pk=v1-Z0FBQUFBQm5IZkJDMlNyYUVUTjIyZVN3UWFNX3BFTU85SWpCM2NUMUk3T2dxejhLSzBhNWNMMXNzZlp3c09BSTR6YW1Sc1BmdGNTVk1GY0liT1RoWDZZX1lNZlZ0Z1dqd3c9PQ==", {
@@ -460,8 +460,8 @@
             }
         }
 
-        // Handle Form Submission
         let isSubmitting = false;
+        let shouldAutoScroll = true;
         chatForm.addEventListener("submit", async (event) => {
             event.preventDefault();
             if (isSubmitting) return;
@@ -489,14 +489,19 @@
             isSubmitting = false;
         });
 
-        // Auto Scroll
         function autoScroll() {
-            requestAnimationFrame(() => {
-                chatContent.scrollTop = chatContent.scrollHeight;
-            });
+            if (shouldAutoScroll) {
+                requestAnimationFrame(() => {
+                    chatContent.scrollTop = chatContent.scrollHeight;
+                });
+            }
         }
 
-        // Initial Welcome Message
+        chatContent.addEventListener('scroll', () => {
+            const isAtBottom = chatContent.scrollHeight - chatContent.clientHeight <= chatContent.scrollTop + 1;
+            shouldAutoScroll = isAtBottom;
+        });
+
         window.addEventListener('load', () => {
             setTimeout(() => {
                 const welcomeMessage = createMessageElement("Welcome to NEXT AI! How can I assist you today?", false);
