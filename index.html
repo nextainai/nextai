@@ -278,6 +278,7 @@
         const chatForm = document.getElementById("chat-form");
         const userInput = document.getElementById("user-input");
         const thinkBtn = document.getElementById("think-btn");
+        let isThinkMode = false;
 
         const chatGPTLogo = "https://i.ibb.co/Z6dDQpwx/ncizgz.jpg";
         const userLogo = "https://i.ibb.co/ssQNvBC/67373290.jpg";
@@ -300,7 +301,7 @@
                                         <div class="dot"></div>
                                     </div>`;
             } else {
-                bubble.textContent = message; // Simplified for now, can add markdown later
+                bubble.textContent = message;
             }
 
             messageWrapper.appendChild(fromUser ? bubble : avatar);
@@ -345,7 +346,15 @@
             chatContent.appendChild(loadingMessage);
             autoScroll();
 
-            const botResponse = await fetchResponse(userMessage);
+            let botResponse;
+            if (isThinkMode) {
+                // Simulate Think mode with a delay
+                await new Promise(resolve => setTimeout(resolve, 3000)); // 3-second delay
+                botResponse = await fetchResponse(userMessage + " (processed with extra thought)");
+            } else {
+                botResponse = await fetchResponse(userMessage);
+            }
+
             chatContent.removeChild(loadingMessage);
             const messageElement = createMessageElement(botResponse, false);
             messageElement.querySelector('.loading')?.classList.add('fade-out');
@@ -370,8 +379,10 @@
         });
 
         thinkBtn.addEventListener('click', () => {
-            alert('Think mode activated!');
-            // Add Think mode logic here
+            isThinkMode = !isThinkMode;
+            thinkBtn.style.background = isThinkMode ? '#00c6ff' : '#444';
+            thinkBtn.textContent = isThinkMode ? 'Thinking...' : 'Think';
+            alert(isThinkMode ? 'Think mode enabled!' : 'Think mode disabled!');
         });
     </script>
 </body>
