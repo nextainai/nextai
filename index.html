@@ -52,7 +52,7 @@
             opacity: 0.4;
         }
 
-        /* Top Bar with Centered Logo */
+        /* Top Bar with Enhanced 3D Logo */
         .top-bar {
             background: rgba(26, 26, 26, 0.9);
             padding: 15px 25px;
@@ -62,18 +62,20 @@
             font-size: 2em;
             font-weight: bold;
             color: #00c6ff;
-            text-shadow: 0 0 10px #00c6ff, 0 0 20px #9600ff;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            text-shadow: 0 0 10px #00c6ff, 0 0 20px #9600ff, 0 0 5px #00c6ff; /* Added depth with extra shadow */
+            letter-spacing: 2px; /* Slight spacing for 3D effect */
+            text-transform: uppercase; /* Uniform caps for boldness */
             position: fixed;
             top: 0;
             width: 100%;
             z-index: 1000;
-            transition: background 0.3s;
+            transition: background 0.3s, transform 0.3s;
+            transform: perspective(500px) rotateX(5deg); /* 3D tilt effect */
         }
 
         .top-bar:hover {
             background: rgba(26, 26, 26, 1);
+            transform: perspective(500px) rotateX(0deg); /* Flatten on hover for interaction */
         }
 
         /* Chat Container */
@@ -93,7 +95,7 @@
             width: 100%;
             max-width: 800px;
             flex: 1;
-            overflow-y: auto;
+            overflow-y: auto; /* Ensure scrolling is enabled */
             padding: 20px;
             background: rgba(44, 44, 44, 0.9);
             border-radius: 15px;
@@ -336,7 +338,7 @@
     <!-- Particle Background -->
     <div id="particles-js"></div>
 
-    <!-- Top Bar with Centered Logo -->
+    <!-- Top Bar with Enhanced 3D Logo -->
     <div class="top-bar">NEXT AI</div>
 
     <!-- Chat Area -->
@@ -375,8 +377,8 @@
         const chatForm = document.getElementById("chat-form");
         const userInput = document.getElementById("user-input");
 
-        const chatGPTLogo = "https://i.ibb.co/Z6dDQpwx/ncizgz.jpg"; // Bot logo from original code
-        const userLogo = "https://i.ibb.co/ssQNvBC/67373290.jpg"; // User logo from original code
+        const chatGPTLogo = "https://i.ibb.co/Z6dDQpwx/ncizgz.jpg";
+        const userLogo = "https://i.ibb.co/ssQNvBC/67373290.jpg";
 
         function parseMarkdown(text) {
             text = text.replace(/```([\s\S]*?)```/g, (match, code) => {
@@ -497,10 +499,16 @@
             }
         }
 
-        chatContent.addEventListener('scroll', () => {
+        // Ensure manual scrolling works by checking user intent
+        chatContent.addEventListener('wheel', () => {
             const isAtBottom = chatContent.scrollHeight - chatContent.clientHeight <= chatContent.scrollTop + 1;
             shouldAutoScroll = isAtBottom;
-        });
+        }, { passive: true });
+
+        chatContent.addEventListener('touchmove', () => {
+            const isAtBottom = chatContent.scrollHeight - chatContent.clientHeight <= chatContent.scrollTop + 1;
+            shouldAutoScroll = isAtBottom;
+        }, { passive: true });
 
         window.addEventListener('load', () => {
             setTimeout(() => {
