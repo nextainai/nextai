@@ -17,49 +17,6 @@
             overflow: hidden;
         }
 
-        /* Code Block Styling */
-        .code-block {
-            position: relative;
-            background-color: #2a2a2a;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 5px 0;
-            overflow: auto;
-            font-family: monospace;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            color: #e0e0e0;
-        }
-
-        .code-block .keyword { color: #d73a49; font-weight: bold; }
-        .code-block .variable { color: #6f42c1; }
-        .code-block .string { color: #032f62; }
-        .code-block .number { color: #005cc5; }
-        .code-block .comment { color: #6a737d; font-style: italic; }
-        .code-block .operator { color: #e36209; }
-
-        .inline-code {
-            background-color: #333;
-            padding: 2px 5px;
-            border-radius: 3px;
-            color: #e0e0e0;
-        }
-
-        .copy-button, .copy-button-inline {
-            background-color: transparent;
-            color: #00c6ff;
-            border: none;
-            border-radius: 5px;
-            padding: 0;
-            cursor: pointer;
-            margin-left: 10px;
-            font-size: 18px;
-        }
-
-        .copy-button:hover, .copy-button-inline:hover {
-            color: #9600ff;
-        }
-
         /* Top Bar */
         .top-bar {
             background: linear-gradient(90deg, #1a1a1a, #2a2a2a);
@@ -70,7 +27,7 @@
             font-size: 1.8em;
             font-weight: bold;
             color: #00c6ff;
-            text-shadow: 0 0 10px #00c6ff, 0 0 20px #9600ff;
+            text-shadow: 0 0 10px #00c6ff;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
             position: fixed;
@@ -146,28 +103,11 @@
             background: rgba(255, 255, 255, 0.1);
             color: #e0e0e0;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-            position: relative;
-            overflow: hidden;
         }
 
         .message.user .bubble {
             background: linear-gradient(90deg, #00c6ff, #007bff);
             color: #fff;
-        }
-
-        .bubble::after {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.05), transparent);
-            animation: shimmer 2s infinite;
-            z-index: 0;
-        }
-
-        @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
         }
 
         .avatar {
@@ -301,7 +241,6 @@
             background: #444;
             color: #e0e0e0;
             cursor: pointer;
-            margin-right: 10px;
             transition: background 0.3s;
         }
 
@@ -331,7 +270,6 @@
     <form id="chat-form" class="bottom-bar">
         <input id="user-input" type="text" placeholder="Ask anything..." autocomplete="off">
         <button type="submit">Send</button>
-        <button type="button" class="mode-btn" id="deepsearch-btn">DeepSearch</button>
         <button type="button" class="mode-btn" id="think-btn">Think</button>
     </form>
 
@@ -339,67 +277,10 @@
         const chatContent = document.getElementById("chat-content");
         const chatForm = document.getElementById("chat-form");
         const userInput = document.getElementById("user-input");
-        const deepsearchBtn = document.getElementById("deepsearch-btn");
         const thinkBtn = document.getElementById("think-btn");
 
         const chatGPTLogo = "https://i.ibb.co/Z6dDQpwx/ncizgz.jpg";
         const userLogo = "https://i.ibb.co/ssQNvBC/67373290.jpg";
-
-        function parseMarkdown(text) {
-            text = text.replace(/```([\s\S]*?)```/g, (match, code) => {
-                const codeWithoutLanguage = code.split('\n').slice(1).join('\n');
-                return `
-                    <pre class="code-block">
-                        <code>${escapeHtml(code)}</code>
-                        <button class="copy-button" data-code="${encodeURIComponent(codeWithoutLanguage)}">
-                            <i class="fa fa-copy"></i>
-                        </button>
-                    </pre>`;
-            });
-            text = text.replace(/`([^`]+)`/g, (match, code) => {
-                return `<code class="inline-code">${escapeHtml(code)}</code>
-                        <button class="copy-button-inline" data-code="${encodeURIComponent(code)}">
-                            <i class="fa fa-copy"></i>
-                        </button>`;
-            });
-            text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-            text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-            text = text.replace(/\n/g, '<br/>');
-            return text;
-        }
-
-        function escapeHtml(text) {
-            return text
-                .replace(/&/g, "&")
-                .replace(/</g, "<")
-                .replace(/>/g, ">")
-                .replace(/"/g, """")
-                .replace(/'/g, "'");
-        }
-
-        function copyToClipboard(text, button) {
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            const icon = button.querySelector('i');
-            icon.classList.remove('fa-copy');
-            icon.classList.add('fa-check');
-            setTimeout(() => {
-                icon.classList.remove('fa-check');
-                icon.classList.add('fa-copy');
-            }, 1000);
-        }
-
-        document.addEventListener("click", (event) => {
-            const button = event.target.closest('.copy-button, .copy-button-inline');
-            if (button) {
-                const code = decodeURIComponent(button.getAttribute('data-code'));
-                copyToClipboard(code, button);
-            }
-        });
 
         function createMessageElement(message, fromUser, isLoading = false) {
             const messageWrapper = document.createElement("div");
@@ -419,8 +300,7 @@
                                         <div class="dot"></div>
                                     </div>`;
             } else {
-                bubble.classList.add("bubble");
-                bubble.innerHTML = parseMarkdown(message);
+                bubble.textContent = message; // Simplified for now, can add markdown later
             }
 
             messageWrapper.appendChild(fromUser ? bubble : avatar);
@@ -483,16 +363,10 @@
 
         window.addEventListener('load', () => {
             setTimeout(() => {
-                const welcomeMessage = createMessageElement("How can I help you today?", false);
+                const welcomeMessage = createMessageElement("Hello! How can I help you today?", false);
                 chatContent.appendChild(welcomeMessage);
                 autoScroll();
             }, 100);
-        });
-
-        // Mode button interactions (placeholder functionality)
-        deepsearchBtn.addEventListener('click', () => {
-            alert('DeepSearch mode activated!');
-            // Add DeepSearch logic here
         });
 
         thinkBtn.addEventListener('click', () => {
