@@ -14,7 +14,7 @@
 
         body {
             font-family: 'Arial', sans-serif;
-            background: #000;
+            background: #1a1a1a; /* Deep dark background */
             color: #fff;
             display: flex;
             flex-direction: column;
@@ -31,10 +31,10 @@
             left: 0;
             width: 200%;
             height: 100%;
-            background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(0, 123, 255, 0.2));
-            opacity: 0.4;
+            background: linear-gradient(45deg, rgba(0, 198, 255, 0.1), rgba(255, 0, 255, 0.1));
+            opacity: 0.3;
             z-index: 0;
-            animation: wave 12s infinite linear;
+            animation: wave 10s infinite linear;
         }
 
         @keyframes wave {
@@ -48,34 +48,33 @@
             width: 100%;
             height: 100%;
             z-index: 1;
+            opacity: 0.8;
         }
 
         /* Top Bar */
         .top-bar {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            padding: 15px 20px;
+            background: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(8px);
+            padding: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.6em;
+            font-size: 2em;
             font-weight: bold;
-            color: #fff;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+            color: #fff; /* White text as requested */
+            text-shadow: 0 0 10px #00c6ff, 0 0 20px #ff00ff;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
             position: fixed;
             top: 0;
             width: 100%;
             z-index: 1000;
+            animation: topGlow 2s ease-in-out infinite alternate;
         }
 
-        .top-bar .logo {
-            animation: glow 1.5s ease-in-out infinite alternate;
-        }
-
-        @keyframes glow {
-            from { text-shadow: 0 0 8px #fff, 0 0 15px #00c6ff, 0 0 20px #00c6ff; }
-            to { text-shadow: 0 0 12px #fff, 0 0 25px #00c6ff, 0 0 35px #00c6ff; }
+        @keyframes topGlow {
+            from { box-shadow: 0 4px 15px rgba(0, 198, 255, 0.3); }
+            to { box-shadow: 0 4px 15px rgba(255, 0, 255, 0.3); }
         }
 
         /* Chat Area */
@@ -83,32 +82,31 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            width: 100%;
-            height: calc(100vh - 120px); /* Full height minus top and bottom bars */
-            overflow-y: auto; /* Ensure scrolling works */
+            justify-content: center;
+            align-items: center;
+            margin-top: 80px;
+            margin-bottom: 70px;
+            overflow: hidden;
             z-index: 2;
-            border: 3px solid transparent;
-            border-image: linear-gradient(45deg, #00c6ff, #ff00ff) 1;
-            box-shadow: 0 0 25px rgba(0, 198, 255, 0.7);
-            animation: borderGlow 2.5s ease-in-out infinite alternate;
-            position: absolute;
-            top: 60px;
-            bottom: 60px; /* Align with fixed bars */
-            left: 0;
-            right: 0;
-            padding: 0; /* Remove any padding to ensure full edge */
-        }
-
-        @keyframes borderGlow {
-            from { box-shadow: 0 0 15px rgba(0, 198, 255, 0.5); }
-            to { box-shadow: 0 0 30px rgba(0, 198, 255, 0.9); }
         }
 
         .chat-content {
+            width: 90%;
+            max-width: 700px;
             flex: 1;
             overflow-y: auto;
-            padding: 20px;
+            padding: 25px;
+            background: #2c2c2c; /* Light dark like Grok AI */
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(0, 198, 255, 0.2), inset 0 0 10px rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
             scroll-behavior: smooth;
+            animation: contentPulse 3s infinite alternate;
+        }
+
+        @keyframes contentPulse {
+            from { box-shadow: 0 0 30px rgba(0, 198, 255, 0.2); }
+            to { box-shadow: 0 0 30px rgba(255, 0, 255, 0.2); }
         }
 
         .chat-content::-webkit-scrollbar {
@@ -116,19 +114,19 @@
         }
 
         .chat-content::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.3);
+            background: linear-gradient(90deg, #00c6ff, #ff00ff);
             border-radius: 10px;
+            opacity: 0.6;
         }
 
-        /* Messages */
         .message {
             margin: 15px 0;
             display: flex;
             align-items: flex-end;
-            max-width: 80%;
+            max-width: 75%;
             opacity: 0;
-            transform: translateY(30px);
-            animation: slideIn 0.6s ease forwards;
+            transform: translateY(20px);
+            animation: slideIn 0.5s ease-out forwards;
         }
 
         .message.user {
@@ -142,60 +140,65 @@
         }
 
         .bubble {
-            padding: 12px 18px;
+            padding: 15px 20px;
             border-radius: 25px;
             word-wrap: break-word;
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.1);
             color: #fff;
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
-            max-width: calc(100% - 60px);
-            backdrop-filter: blur(8px);
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-
-        .message.bot .bubble {
-            animation: typing 1.2s ease-in-out;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
         }
 
         .message.user .bubble {
-            background: #00c6ff;
+            background: linear-gradient(90deg, #00c6ff, #007bff);
+            color: #fff;
+        }
+
+        .bubble::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+            animation: shimmer 2s infinite;
+            z-index: 0;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
 
         .bubble:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 8px 20px rgba(0, 198, 255, 0.7);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 198, 255, 0.5);
         }
 
         @keyframes slideIn {
             to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes typing {
-            0% { transform: scale(0.9); opacity: 0.3; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
         .avatar {
-            width: 45px;
-            height: 45px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             margin: 0 12px;
-            box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
-            background: #00c6ff; /* Enhanced with a solid color */
+            background: linear-gradient(45deg, #00c6ff, #ff00ff);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2em;
+            font-size: 1.1em;
             font-weight: bold;
-            color: #fff;
+            text-shadow: 0 0 5px #fff;
+            box-shadow: 0 0 10px rgba(0, 198, 255, 0.4);
         }
 
         .message.user .avatar {
-            margin-left: 12px;
-        }
-
-        .message.bot .avatar {
-            margin-right: 12px;
+            background: #007bff;
         }
 
         /* Loading Animation */
@@ -203,15 +206,34 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 12px 18px;
-            background: rgba(255, 255, 255, 0.15);
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 25px;
             max-width: 40%;
             color: #fff;
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
         }
 
-        .dots {
+        .loading::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, #00c6ff, #ff00ff, transparent);
+            animation: typingWave 1.5s infinite;
+            z-index: 0;
+        }
+
+        @keyframes typingWave {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .loading .dots {
+            position: relative;
+            z-index: 1;
             display: flex;
             align-items: center;
             gap: 6px;
@@ -222,26 +244,26 @@
             height: 10px;
             background: #fff;
             border-radius: 50%;
-            animation: bounce 1s infinite;
+            animation: bounce 1.4s infinite;
         }
 
-        .dot:nth-child(2) { animation-delay: 0.3s; }
-        .dot:nth-child(3) { animation-delay: 0.6s; }
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
 
         @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-12px); }
+            0%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-15px); }
         }
 
         /* Bottom Bar */
         .bottom-bar {
             display: flex;
             align-items: center;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            padding: 12px;
-            border-top: 2px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 -3px 8px rgba(0, 0, 0, 0.3);
+            background: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(8px);
+            padding: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.5);
             position: fixed;
             bottom: 0;
             width: 100%;
@@ -254,38 +276,44 @@
             border: none;
             border-radius: 25px;
             font-size: 1.1em;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(44, 44, 44, 0.8);
             color: #fff;
-            margin-right: 12px;
+            margin-right: 15px;
             outline: none;
+            box-shadow: inset 0 0 10px rgba(0, 198, 255, 0.1);
+            transition: box-shadow 0.3s;
+        }
+
+        .bottom-bar input:focus {
+            box-shadow: inset 0 0 10px rgba(0, 198, 255, 0.3);
         }
 
         .bottom-bar input::placeholder {
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(255, 255, 255, 0.5);
         }
 
         .bottom-bar .send-btn {
-            padding: 12px;
+            padding: 12px 18px;
             border: none;
-            border-radius: 50%;
-            font-size: 1.4em;
-            background: #00c6ff;
+            border-radius: 25px;
+            font-size: 1.2em;
+            background: linear-gradient(45deg, #00c6ff, #ff00ff);
             color: #fff;
             cursor: pointer;
             position: relative;
             overflow: hidden;
-            transition: transform 0.3s, background 0.3s;
-            animation: pulse 1.5s infinite;
+            transition: transform 0.3s, box-shadow 0.3s;
+            animation: sendPulse 2s infinite;
         }
 
         .bottom-bar .send-btn:hover {
-            background: #0099cc;
-            transform: scale(1.2);
+            transform: scale(1.1);
+            box-shadow: 0 0 20px #00c6ff, 0 0 30px #ff00ff;
         }
 
         .bottom-bar .send-btn:active {
+            transform: scale(0.95);
             animation: none;
-            transform: rotate(360deg) scale(1);
         }
 
         .bottom-bar .send-btn::after {
@@ -295,51 +323,54 @@
             left: 50%;
             width: 0;
             height: 0;
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             transform: translate(-50%, -50%);
             transition: width 0.5s, height 0.5s;
+            z-index: 0;
         }
 
         .bottom-bar .send-btn:active::after {
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             opacity: 0;
         }
 
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(0, 198, 255, 0.8); }
-            70% { box-shadow: 0 0 0 12px rgba(0, 198, 255, 0); }
+        @keyframes sendPulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 198, 255, 0.7); }
+            50% { box-shadow: 0 0 15px 10px rgba(0, 198, 255, 0); }
             100% { box-shadow: 0 0 0 0 rgba(0, 198, 255, 0); }
         }
 
         /* Code Block Styling */
         .code-block {
             position: relative;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 12px;
-            border-radius: 8px;
-            margin: 8px 0;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
             overflow: auto;
-            font-family: monospace;
+            font-family: 'Courier New', monospace;
             white-space: pre-wrap;
             word-wrap: break-word;
-            color: #fff;
+            color: #e0e0e0;
+            box-shadow: inset 0 0 10px rgba(0, 198, 255, 0.1);
         }
 
         .copy-button, .copy-button-inline {
             background: transparent;
-            color: #fff;
+            color: #00c6ff;
             border: none;
-            padding: 0;
+            padding: 5px;
             cursor: pointer;
-            margin-left: 12px;
-            font-size: 20px;
-            transition: color 0.3s;
+            margin-left: 10px;
+            font-size: 18px;
+            transition: color 0.3s, transform 0.3s;
         }
 
         .copy-button:hover, .copy-button-inline:hover {
-            color: #00c6ff;
+            color: #ff00ff;
+            transform: scale(1.2);
         }
     </style>
 </head>
@@ -349,7 +380,7 @@
 
     <!-- Top Bar -->
     <div class="top-bar">
-        <span class="logo">NEXT-1</span>
+        <span class="logo">NEXT AI</span>
     </div>
 
     <!-- Chat Area -->
@@ -365,21 +396,21 @@
 
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script>
-        // Particle.js Configuration (Optimized)
+        // Particle.js Configuration
         particlesJS("particles-js", {
             particles: {
-                number: { value: 80, density: { enable: true, value_area: 800 } },
-                color: { value: ["#ffffff", "#00c6ff", "#ff00ff"] },
-                shape: { type: ["circle", "star"], polygon: { nb_sides: 5 } },
-                opacity: { value: 0.7, random: true },
-                size: { value: 4, random: true },
-                line_linked: { enable: true, distance: 100, color: "#ffffff", opacity: 0.5, width: 1 },
-                move: { enable: true, speed: 3, direction: "random", random: true, straight: false, out_mode: "out" }
+                number: { value: 100, density: { enable: true, value_area: 800 } },
+                color: { value: ["#00c6ff", "#ff00ff", "#ffffff"] },
+                shape: { type: "circle" },
+                opacity: { value: 0.5, random: true },
+                size: { value: 3, random: true },
+                line_linked: { enable: true, distance: 120, color: "#00c6ff", opacity: 0.4, width: 1 },
+                move: { enable: true, speed: 2, direction: "none", random: true, straight: false, out_mode: "out" }
             },
             interactivity: {
                 detect_on: "canvas",
-                events: { onhover: { enable: true, mode: "grab" }, onclick: { enable: true, mode: "push" }, resize: true },
-                modes: { grab: { distance: 150, line_linked: { opacity: 0.7 } }, push: { particles_nb: 4 } }
+                events: { onhover: { enable: true, mode: "repulse" }, onclick: { enable: true, mode: "push" }, resize: true },
+                modes: { repulse: { distance: 150 }, push: { particles_nb: 4 } }
             },
             retina_detect: true
         });
@@ -441,10 +472,10 @@
             const messageWrapper = document.createElement("div");
             messageWrapper.classList.add("message", fromUser ? "user" : "bot");
 
-            const avatar = document.createElement("div"); // Using div for custom styling
+            const avatar = document.createElement("img");
+            avatar.src = fromUser ? userLogo : chatGPTLogo;
+            avatar.alt = fromUser ? "User" : "NEXT AI";
             avatar.classList.add("avatar");
-            avatar.style.background = fromUser ? '#00c6ff' : 'linear-gradient(45deg, #00c6ff, #ff00ff)';
-            avatar.innerHTML = fromUser ? 'U' : 'N'; // Initials for user and NEXT AI
 
             const bubble = document.createElement("div");
             if (isLoading) {
@@ -512,7 +543,7 @@
             requestAnimationFrame(() => {
                 const maxScroll = chatContent.scrollHeight - chatContent.clientHeight;
                 if (maxScroll > 0) {
-                    chatContent.scrollTo({ top: maxScroll, behavior: 'smooth' });
+                    chatContent.scrollTo({ top: maxScroll - 20, behavior: 'smooth' });
                 }
             });
         }
@@ -527,4 +558,4 @@
         });
     </script>
 </body>
-</html>            
+</html>
