@@ -347,12 +347,22 @@
             autoScroll();
 
             let botResponse;
-            if (isThinkMode) {
-                // Simulate Think mode with a delay
-                await new Promise(resolve => setTimeout(resolve, 3000)); // 3-second delay
-                botResponse = await fetchResponse(userMessage + " (processed with extra thought)");
+            const lowerCaseMessage = userMessage.toLowerCase();
+
+            // Check for predefined questions
+            if (lowerCaseMessage === "who are you" || lowerCaseMessage === "who are you?") {
+                botResponse = "I am Next AI, and my development team made me as a chatbot.";
+            } else if (lowerCaseMessage === "who trained you" || lowerCaseMessage === "who trained you?") {
+                botResponse = "I'm trained in real-time by the Next AI developers team.";
             } else {
-                botResponse = await fetchResponse(userMessage);
+                // Handle Think mode and fetch response
+                if (isThinkMode) {
+                    // Simulate Think mode with a delay
+                    await new Promise(resolve => setTimeout(resolve, 3000)); // 3-second delay
+                    botResponse = await fetchResponse(userMessage + " (processed with extra thought)");
+                } else {
+                    botResponse = await fetchResponse(userMessage);
+                }
             }
 
             chatContent.removeChild(loadingMessage);
