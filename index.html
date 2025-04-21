@@ -52,6 +52,7 @@
             margin-bottom: 120px;
             overflow: hidden;
             padding: 10px;
+            width: 100%; /* Ensure full width */
         }
 
         .chat-content {
@@ -63,6 +64,8 @@
             border-radius: 10px;
             box-shadow: 0 0 15px rgba(0, 198, 255, 0.1);
             min-height: 0;
+            width: 100%; /* Full width for chat content */
+            max-width: none; /* Remove any max-width constraints */
         }
 
         .chat-content::-webkit-scrollbar {
@@ -128,7 +131,6 @@
             color: #fff;
             border-radius: 10px 20px 10px 20px;
             padding: 15px 20px;
-            display: block !important; /* Force display to ensure visibility */
         }
 
         .avatar {
@@ -216,6 +218,7 @@
             right: 0;
             z-index: 1000;
             transition: background 0.3s;
+            width: 100%; /* Full width */
         }
 
         .bottom-bar:hover {
@@ -297,6 +300,7 @@
             z-index: 1000;
             max-height: 50px;
             overflow-x: auto;
+            width: 100%; /* Full width */
         }
 
         .quick-question-btn {
@@ -351,7 +355,7 @@
         let isThinkMode = false;
 
         const chatGPTLogo = "https://i.ibb.co/Z6dDQpwx/ncizgz.jpg";
-        const userLogo = "https://i.ibb.co/ssQNvBC/67373290.jpg";
+        const userLogo = "https://i.ibb.co/ssQNvBC/67373290.jpg"; // Verify this URL works
 
         function createMessageElement(message, fromUser, isLoading = false) {
             const messageWrapper = document.createElement("div");
@@ -457,7 +461,6 @@
 
             // Ensure user's message is displayed immediately with proper styling
             const userMessageElement = createMessageElement(userMessage, true);
-            console.log("User message created and appended:", userMessage, userMessageElement); // Enhanced debug log
             chatContent.appendChild(userMessageElement);
             userInput.value = "";
             autoScroll();
@@ -501,7 +504,7 @@
 
         window.addEventListener('load', () => {
             setTimeout(() => {
-                const welcomeMessage = createMessageElement("Hello! How can I help you today?", false);
+                const welcomeMessage = createMessageElement("Hello! How can I assist you today?", false);
                 chatContent.appendChild(welcomeMessage);
                 const bubble = welcomeMessage.querySelector(".bubble");
                 typeWriter(bubble, bubble.dataset.fullText, false);
