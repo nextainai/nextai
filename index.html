@@ -128,6 +128,7 @@
             color: #fff;
             border-radius: 10px 20px 10px 20px;
             padding: 15px 20px;
+            display: block !important; /* Force display to ensure visibility */
         }
 
         .avatar {
@@ -365,6 +366,8 @@
                 avatar.classList.add("user-fallback");
                 avatar.innerHTML = "U"; // Initial of "User"
                 avatar.style.backgroundImage = "none";
+                avatar.style.width = "40px";
+                avatar.style.height = "40px";
             };
 
             const bubble = document.createElement("div");
@@ -454,7 +457,7 @@
 
             // Ensure user's message is displayed immediately with proper styling
             const userMessageElement = createMessageElement(userMessage, true);
-            console.log("User message created:", userMessage); // Debug log
+            console.log("User message created and appended:", userMessage, userMessageElement); // Enhanced debug log
             chatContent.appendChild(userMessageElement);
             userInput.value = "";
             autoScroll();
