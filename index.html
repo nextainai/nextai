@@ -52,7 +52,6 @@
             margin-bottom: 120px;
             overflow: hidden;
             padding: 10px;
-            width: 100%; /* Ensure full width */
         }
 
         .chat-content {
@@ -64,8 +63,6 @@
             border-radius: 10px;
             box-shadow: 0 0 15px rgba(0, 198, 255, 0.1);
             min-height: 0;
-            width: 100%; /* Full width for chat content */
-            max-width: none; /* Remove any max-width constraints */
         }
 
         .chat-content::-webkit-scrollbar {
@@ -218,7 +215,6 @@
             right: 0;
             z-index: 1000;
             transition: background 0.3s;
-            width: 100%; /* Full width */
         }
 
         .bottom-bar:hover {
@@ -300,7 +296,6 @@
             z-index: 1000;
             max-height: 50px;
             overflow-x: auto;
-            width: 100%; /* Full width */
         }
 
         .quick-question-btn {
@@ -355,7 +350,7 @@
         let isThinkMode = false;
 
         const chatGPTLogo = "https://i.ibb.co/Z6dDQpwx/ncizgz.jpg";
-        const userLogo = "https://i.ibb.co/ssQNvBC/67373290.jpg"; // Verify this URL works
+        const userLogo = "https://i.ibb.co/ssQNvBC/67373290.jpg";
 
         function createMessageElement(message, fromUser, isLoading = false) {
             const messageWrapper = document.createElement("div");
@@ -365,7 +360,7 @@
             avatar.src = fromUser ? userLogo : chatGPTLogo;
             avatar.alt = fromUser ? "User" : "NEXT AI";
             avatar.classList.add("avatar");
-            // Fallback if image fails to load
+            // Fallback if image fails to load, and ensure bubble content
             avatar.onerror = () => {
                 avatar.classList.add("user-fallback");
                 avatar.innerHTML = "U"; // Initial of "User"
@@ -384,7 +379,7 @@
                                     </div>`;
             } else {
                 bubble.dataset.fullText = message;
-                bubble.textContent = ""; // Start empty for animation
+                bubble.textContent = message; // Force immediate text content
             }
 
             messageWrapper.appendChild(fromUser ? bubble : avatar);
@@ -461,6 +456,7 @@
 
             // Ensure user's message is displayed immediately with proper styling
             const userMessageElement = createMessageElement(userMessage, true);
+            console.log("User message created and appended:", userMessage, userMessageElement); // Enhanced debug log
             chatContent.appendChild(userMessageElement);
             userInput.value = "";
             autoScroll();
@@ -504,7 +500,7 @@
 
         window.addEventListener('load', () => {
             setTimeout(() => {
-                const welcomeMessage = createMessageElement("Hello! How can I assist you today?", false);
+                const welcomeMessage = createMessageElement("Hello! How can I help you today?", false);
                 chatContent.appendChild(welcomeMessage);
                 const bubble = welcomeMessage.querySelector(".bubble");
                 typeWriter(bubble, bubble.dataset.fullText, false);
