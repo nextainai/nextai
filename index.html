@@ -2,539 +2,869 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <title>NEXT AI</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #1a1a1a;
-            color: #e0e0e0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* Top Bar */
-        .top-bar {
-            background: linear-gradient(90deg, #1a1a1a, #2a2a2a);
-            padding: 15px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8em;
-            font-weight: bold;
-            color: #00c6ff;
-            text-shadow: 0 0 10px #00c6ff;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-            transition: transform 0.3s;
-            transform: perspective(500px) rotateX(5deg);
-        }
-
-        .top-bar:hover {
-            transform: perspective(500px) rotateX(0deg);
-        }
-
-        /* Chat Area */
-        .chat-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            margin-top: 70px;
-            margin-bottom: 120px;
-            overflow: hidden;
-            padding: 10px;
-        }
-
-        .chat-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            scroll-behavior: smooth;
-            background: rgba(44, 44, 44, 0.9);
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 198, 255, 0.1);
-            min-height: 0;
-        }
-
-        .chat-content::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .chat-content::-webkit-scrollbar-thumb {
-            background: linear-gradient(to bottom, #00c6ff, #9600ff);
-            border-radius: 10px;
-        }
-
-        .message {
-            margin: 15px 0;
-            display: flex;
-            align-items: flex-end;
-            max-width: 80%;
-            opacity: 0;
-            animation: fadeIn 0.5s forwards;
-        }
-
-        @keyframes fadeIn {
-            to { opacity: 1; }
-        }
-
-        .message.user {
-            justify-content: flex-end;
-            margin-left: auto;
-        }
-
-        .message.bot {
-            justify-content: flex-start;
-            margin-right: auto;
-        }
-
-        .bubble {
-            padding: 15px 25px;
-            border-radius: 15px;
-            word-wrap: break-word;
-            background: rgba(255, 255, 255, 0.1);
-            color: #e0e0e0;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            font-size: 1.1em;
-            line-height: 1.5;
-            animation: bubblePop 0.3s ease-out;
-            position: relative;
-            margin-bottom: 10px;
-        }
-
-        .message.bot .bubble {
-            background: linear-gradient(135deg, #2a2a2a, #444);
-            border-radius: 20px 10px 20px 10px;
-            padding: 18px 28px;
-        }
-
-        @keyframes bubblePop {
-            0% { transform: scale(0.9); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        .message.user .bubble {
-            background: linear-gradient(90deg, #00c6ff, #007bff);
-            color: #fff;
-            border-radius: 10px 20px 10px 20px;
-            padding: 15px 20px;
-        }
-
-        .avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            margin: 0 10px;
-            object-fit: cover;
-        }
-
-        .avatar.user-fallback {
-            background-color: #00c6ff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-weight: bold;
-        }
-
-        .message.user .avatar {
-            margin-left: 10px;
-        }
-
-        .message.bot .avatar {
-            margin-right: 10px;
-        }
-
-        /* Loading Animation */
-        .loading {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 12px 18px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            max-width: 40%;
-            color: #e0e0e0;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-            opacity: 1;
-            transition: opacity 0.5s;
-        }
-
-        .loading.fade-out {
-            opacity: 0;
-        }
-
-        .dots {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .dot {
-            width: 8px;
-            height: 8px;
-            background-color: #00c6ff;
-            border-radius: 50%;
-            animation: blink 1.4s infinite;
-        }
-
-        .dot:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .dot:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        @keyframes blink {
-            0%, 80%, 100% { opacity: 0; }
-            40% { opacity: 1; }
-        }
-
-        /* Bottom Bar */
-        .bottom-bar {
-            display: flex;
-            align-items: center;
-            background: linear-gradient(90deg, #1a1a1a, #2a2a2a);
-            padding: 10px 15px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            transition: background 0.3s;
-        }
-
-        .bottom-bar:hover {
-            background: linear-gradient(90deg, #222, #333);
-        }
-
-        .bottom-bar input {
-            flex: 1;
-            padding: 10px 15px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            font-size: 1em;
-            background-color: #333;
-            color: #e0e0e0;
-            margin-right: 10px;
-            outline: none;
-            transition: background-color 0.3s;
-        }
-
-        .bottom-bar input:focus {
-            background-color: #444;
-        }
-
-        .bottom-bar input::placeholder {
-            color: #aaa;
-        }
-
-        .bottom-bar button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 20px;
-            font-size: 1em;
-            background: linear-gradient(45deg, #00c6ff, #9600ff);
-            color: #fff;
-            cursor: pointer;
-            margin-right: 10px;
-            transition: transform 0.3s;
-        }
-
-        .bottom-bar button:hover {
-            transform: scale(1.05);
-        }
-
-        .bottom-bar button:active {
-            transform: scale(0.95);
-        }
-
-        .bottom-bar .mode-btn {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 20px;
-            font-size: 1em;
-            background: #444;
-            color: #e0e0e0;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .bottom-bar .mode-btn:hover {
-            background: #555;
-        }
-
-        .bottom-bar .mode-btn:active {
-            background: #666;
-        }
-
-        /* Quick Questions Bar */
-        .quick-questions {
-            position: fixed;
-            bottom: 60px;
-            left: 0;
-            right: 0;
-            padding: 10px;
-            background: rgba(44, 44, 44, 0.9);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            z-index: 1000;
-            max-height: 50px;
-            overflow-x: auto;
-        }
-
-        .quick-question-btn {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 20px;
-            font-size: 0.9em;
-            background: #333;
-            color: #e0e0e0;
-            cursor: pointer;
-            transition: background 0.3s;
-            white-space: nowrap;
-        }
-
-        .quick-question-btn:hover {
-            background: #444;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Movie Website</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Top Bar -->
-    <div class="top-bar">
-        NEXT AI
+    <div class="container">
+        <header class="">
+            <div class="navbar">
+                <button class="navbar-menu-btn">
+                    <span class="one"></span>
+                    <span class="two"></span>
+                    <span class="three"></span>
+                </button>
+
+                <a href="#" class="navbar-brand">
+                    <img src="https://i.postimg.cc/KvjKVZXj/logo.png" alt="logo">
+                </a>
+
+                <nav class="">
+                    <ul class="navbar-nav">
+                        <li><a href="#" class="navbar-link">Home</a></li>
+                        <li><a href="#category" class="navbar-link">Category</a></li>
+                        <li><a href="#live" class="navbar-link indicator">LIVE</a></li>
+                    </ul>
+                </nav>
+
+                <div class="navbar-actions">
+                    <form action="#" class="navbar-form">
+                        <input type="text" name="search" placeholder="I'm looking for..." class="navbar-form-search">
+
+                        <button class="navbar-form-btn">
+                            <ion-icon name="search"></ion-icon>
+                        </button>
+
+                        <button class="navbar-form-close">
+                            <ion-icon name="close-circle-outline"></ion-icon>
+                        </button>
+                    </form>
+
+                    <button class="navbar-search-btn">
+                        <ion-icon name="search"></ion-icon>
+                    </button>
+
+                    <a href="#" class="navbar-signin">
+                        <span>Sign In</span>
+                        <ion-icon name="log-in"></ion-icon>
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <section class="banner">
+                <div class="banner-card">
+                    <img src="https://i.postimg.cc/Y9SMdz0P/John-Wick-3.jpg" alt="banner" class="banner-img">
+
+                    <div class="card-content">
+                        <div class="card-info">
+                            <div class="genre">
+                                <ion-icon name="film"></ion-icon>
+                                <span>Action/Thriller</span>
+                            </div>
+
+                            <div class="year">
+                                <ion-icon name="calendar"></ion-icon>
+                                <span>2019</span>
+                            </div>
+
+                            <div class="duration">
+                                <ion-icon name="time"></ion-icon>
+                                <span>2h 11min</span>
+                            </div>
+
+                            <div class="quality">4k</div>
+                        </div>
+                        <h2 class="card-title">John Wick: Chapter 3 - Parabellum</h2>
+                    </div>
+                </div>
+
+            </section>
+
+            <section class="movies">
+                <div class="filter-bar">
+                    <div class="filter-dropdowns">
+                        <select name="genre" class="genre">
+                            <option value="all genres">All Genres</option>
+                            <option value="action">Action</option>
+                            <option value="adventure">Adventure</option>
+                            <option value="animal">Animal</option>
+                            <option value="animation">Animation</option>
+                            <option value="biography">Biography</option>
+                            <option value="drama">Drama</option>
+                            <option value="fantasy">Fantasy</option>
+                            <option value="horror">Horror</option>
+                            <option value="scifi">Sci-fi</option>
+                            <option value="war">War</option>
+                        </select>
+
+                        <select name="year" class="year">
+                            <option value="all years">All years</option>
+                            <option value="2024">2024</option>
+                            <option value="2020-2023">2020-2023</option>
+                            <option value="2010-2019">2010-2019</option>
+                            <option value="2000-2009">2000-2009</option>
+                            <option value="1980-1999">1980-1999</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-radios">
+                        <input type="radio" name="grade" id="featured" checked>
+                        <label for="featured">Featured</label>
+
+                        <input type="radio" name="grade" id="popular">
+                        <label for="popular">Popular</label>
+
+                        <input type="radio" name="grade" id="newest">
+                        <label for="newest">Newest</label>
+
+                        <div class="checked-radio-bg"></div>
+                    </div>
+                </div>
+
+                <div class="movies-grid">
+                    <div class="movie-card">
+                        <div class="card-head">
+                            <img src="https://i.postimg.cc/C5mrM9gh/red-notice.jpg" alt="movie" class="card-img">
+
+                            <div class="card-overlay">
+
+                                <div class="bookmark">
+                                    <ion-icon name="bookmark"></ion-icon>
+                                </div>
+
+                                <div class="rating">
+                                    <ion-icon name="star-outline"></ion-icon>
+                                    <span>6.3</span>
+                                </div>
+
+                                <div class="play">
+                                    <ion-icon name="play-circle-outline"></ion-icon>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <h3 class="card-title">Red Notice</h3>
+
+                            <div class="card-info">
+                                <span class="genre">Action/Comedy</span>
+                                <span class="year">2021</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="movie-card">
+                        <div class="card-head">
+                            <img src="https://i.postimg.cc/brB48dkY/spider-men.jpg" alt="movie" class="card-img">
+
+                            <div class="card-overlay">
+
+                                <div class="bookmark">
+                                    <ion-icon name="bookmark"></ion-icon>
+                                </div>
+
+                                <div class="rating">
+                                    <ion-icon name="star-outline"></ion-icon>
+                                    <span>7.4</span>
+                                </div>
+
+                                <div class="play">
+                                    <ion-icon name="play-circle-outline"></ion-icon>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <h3 class="card-title">Spider-Man: Homecoming</h3>
+
+                            <div class="card-info">
+                                <span class="genre">Action/Adventure</span>
+                                <span class="year">2017</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="movie-card">
+                        <div class="card-head">
+                            <img src="https://i.postimg.cc/Kv3HBGtL/matrix.jpg" alt="movie" class="card-img">
+
+                            <div class="card-overlay">
+
+                                <div class="bookmark">
+                                    <ion-icon name="bookmark"></ion-icon>
+                                </div>
+
+                                <div class="rating">
+                                    <ion-icon name="star-outline"></ion-icon>
+                                    <span>5.6</span>
+                                </div>
+
+                                <div class="play">
+                                    <ion-icon name="play-circle-outline"></ion-icon>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <h3 class="card-title">The Matrix Ressurections</h3>
+
+                            <div class="card-info">
+                                <span class="genre">Sci-fi/Action</span>
+                                <span class="year">2021</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="movie-card">
+                        <div class="card-head">
+                            <img src="https://i.postimg.cc/c4YNZM9V/eternals.jpg" alt="movie" class="card-img">
+
+                            <div class="card-overlay">
+
+                                <div class="bookmark">
+                                    <ion-icon name="bookmark"></ion-icon>
+                                </div>
+
+                                <div class="rating">
+                                    <ion-icon name="star-outline"></ion-icon>
+                                    <span>6.3</span>
+                                </div>
+
+                                <div class="play">
+                                    <ion-icon name="play-circle-outline"></ion-icon>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <h3 class="card-title">Eternals</h3>
+
+                            <div class="card-info">
+                                <span class="genre">Adventure/Action</span>
+                                <span class="year">2021</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="movie-card">
+                        <div class="card-head">
+                            <img src="https://i.postimg.cc/Y9jJP1LD/dune.jpg" alt="movie" class="card-img">
+
+                            <div class="card-overlay">
+
+                                <div class="bookmark">
+                                    <ion-icon name="bookmark"></ion-icon>
+                                </div>
+
+                                <div class="rating">
+                                    <ion-icon name="star-outline"></ion-icon>
+                                    <span>8.0</span>
+                                </div>
+
+                                <div class="play">
+                                    <ion-icon name="play-circle-outline"></ion-icon>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <h3 class="card-title">Dune: Part One</h3>
+
+                            <div class="card-info">
+                                <span class="genre">Sci-fi/Adventure</span>
+                                <span class="year">2021</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="movie-card">
+                        <div class="card-head">
+                            <img src="https://i.postimg.cc/q7NwVQQK/1917.jpg" alt="movie" class="card-img">
+
+                            <div class="card-overlay">
+
+                                <div class="bookmark">
+                                    <ion-icon name="bookmark"></ion-icon>
+                                </div>
+
+                                <div class="rating">
+                                    <ion-icon name="star-outline"></ion-icon>
+                                    <span>8.2</span>
+                                </div>
+
+                                <div class="play">
+                                    <ion-icon name="play-circle-outline"></ion-icon>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <h3 class="card-title">1917</h3>
+
+                            <div class="card-info">
+                                <span class="genre">War/Drama</span>
+                                <span class="year">2021</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="movie-card">
+                        <div class="card-head">
+                            <img src="https://i.postimg.cc/d1vhmV70/shang-chi.jpg" alt="movie" class="card-img">
+
+                            <div class="card-overlay">
+
+                                <div class="bookmark">
+                                    <ion-icon name="bookmark"></ion-icon>
+                                </div>
+
+                                <div class="rating">
+                                    <ion-icon name="star-outline"></ion-icon>
+                                    <span>7.4</span>
+                                </div>
+
+                                <div class="play">
+                                    <ion-icon name="play-circle-outline"></ion-icon>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <h3 class="card-title">Shang-Chi and the Legend of the Ten Rings</h3>
+
+                            <div class="card-info">
+                                <span class="genre">Action/Fantasy</span>
+                                <span class="year">2021</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="movie-card">
+                        <div class="card-head">
+                            <img src="https://i.postimg.cc/L6r638wM/casino-royale.jpg" alt="movie" class="card-img">
+
+                            <div class="card-overlay">
+
+                                <div class="bookmark">
+                                    <ion-icon name="bookmark"></ion-icon>
+                                </div>
+
+                                <div class="rating">
+                                    <ion-icon name="star-outline"></ion-icon>
+                                    <span>8.0</span>
+                                </div>
+
+                                <div class="play">
+                                    <ion-icon name="play-circle-outline"></ion-icon>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <h3 class="card-title">Casino Royale</h3>
+
+                            <div class="card-info">
+                                <span class="genre">Action/Adventure</span>
+                                <span class="year">2006</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="movie-card">
+                        <div class="card-head">
+                            <img src="https://i.postimg.cc/Gt6rKXMj/dark-knight.jpg" alt="movie" class="card-img">
+
+                            <div class="card-overlay">
+
+                                <div class="bookmark">
+                                    <ion-icon name="bookmark"></ion-icon>
+                                </div>
+
+                                <div class="rating">
+                                    <ion-icon name="star-outline"></ion-icon>
+                                    <span>9.0</span>
+                                </div>
+
+                                <div class="play">
+                                    <ion-icon name="play-circle-outline"></ion-icon>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <h3 class="card-title">The Dark Knight</h3>
+
+                            <div class="card-info">
+                                <span class="genre">Action/Adventure</span>
+                                <span class="year">2008</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="movie-card">
+                        <div class="card-head">
+                            <img src="https://i.postimg.cc/hjjBqk6r/panther.jpg" alt="movie" class="card-img">
+
+                            <div class="card-overlay">
+
+                                <div class="bookmark">
+                                    <ion-icon name="bookmark"></ion-icon>
+                                </div>
+
+                                <div class="rating">
+                                    <ion-icon name="star-outline"></ion-icon>
+                                    <span>7.3</span>
+                                </div>
+
+                                <div class="play">
+                                    <ion-icon name="play-circle-outline"></ion-icon>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <h3 class="card-title">Black Panther</h3>
+
+                            <div class="card-info">
+                                <span class="genre">Action/Adventure</span>
+                                <span class="year">2018</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="movie-card">
+                        <div class="card-head">
+                            <img src="https://i.postimg.cc/QtyrN6rr/venom.jpg" alt="movie" class="card-img">
+
+                            <div class="card-overlay">
+
+                                <div class="bookmark">
+                                    <ion-icon name="bookmark"></ion-icon>
+                                </div>
+
+                                <div class="rating">
+                                    <ion-icon name="star-outline"></ion-icon>
+                                    <span>6.6</span>
+                                </div>
+
+                                <div class="play">
+                                    <ion-icon name="play-circle-outline"></ion-icon>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <h3 class="card-title">Venom</h3>
+
+                            <div class="card-info">
+                                <span class="genre">Action/Adventure</span>
+                                <span class="year">2018</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="movie-card">
+                        <div class="card-head">
+                            <img src="https://i.postimg.cc/3JgJ9TT4/LOTR.jpg" alt="movie" class="card-img">
+
+                            <div class="card-overlay">
+
+                                <div class="bookmark">
+                                    <ion-icon name="bookmark"></ion-icon>
+                                </div>
+
+                                <div class="rating">
+                                    <ion-icon name="star-outline"></ion-icon>
+                                    <span>9.0</span>
+                                </div>
+
+                                <div class="play">
+                                    <ion-icon name="play-circle-outline"></ion-icon>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <h3 class="card-title">Lord Of The Rings: Return Of The King</h3>
+
+                            <div class="card-info">
+                                <span class="genre">Fantasy/Adventure</span>
+                                <span class="year">2003</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="movie-card">
+                        <div class="card-head">
+                            <img src="https://i.postimg.cc/VkgsQW5z/saving-private-ryan.jpg" alt="movie" class="card-img">
+
+                            <div class="card-overlay">
+
+                                <div class="bookmark">
+                                    <ion-icon name="bookmark"></ion-icon>
+                                </div>
+
+                                <div class="rating">
+                                    <ion-icon name="star-outline"></ion-icon>
+                                    <span>8.6</span>
+                                </div>
+
+                                <div class="play">
+                                    <ion-icon name="play-circle-outline"></ion-icon>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <h3 class="card-title">Saving Private Ryan</h3>
+
+                            <div class="card-info">
+                                <span class="genre">War/Action</span>
+                                <span class="year">1998</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="movie-card">
+                        <div class="card-head">
+                            <img src="https://i.postimg.cc/cHgd3qhJ/interstaller.jpg" alt="movie" class="card-img">
+
+                            <div class="card-overlay">
+
+                                <div class="bookmark">
+                                    <ion-icon name="bookmark"></ion-icon>
+                                </div>
+
+                                <div class="rating">
+                                    <ion-icon name="star-outline"></ion-icon>
+                                    <span>8.7</span>
+                                </div>
+
+                                <div class="play">
+                                    <ion-icon name="play-circle-outline"></ion-icon>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <h3 class="card-title">Interstellar</h3>
+
+                            <div class="card-info">
+                                <span class="genre">Sci-fi/Adventure</span>
+                                <span class="year">2014</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="movie-card">
+                        <div class="card-head">
+                            <img src="https://i.postimg.cc/y8LKr6rd/gladiator.jpg" alt="movie" class="card-img">
+
+                            <div class="card-overlay">
+
+                                <div class="bookmark">
+                                    <ion-icon name="bookmark"></ion-icon>
+                                </div>
+
+                                <div class="rating">
+                                    <ion-icon name="star-outline"></ion-icon>
+                                    <span>8.5</span>
+                                </div>
+
+                                <div class="play">
+                                    <ion-icon name="play-circle-outline"></ion-icon>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <h3 class="card-title">Gladiator</h3>
+
+                            <div class="card-info">
+                                <span class="genre">Action/Adventure</span>
+                                <span class="year">2000</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="movie-card">
+                        <div class="card-head">
+                            <img src="https://i.postimg.cc/6QSXtjKx/endgame.jpg" alt="movie" class="card-img">
+
+                            <div class="card-overlay">
+
+                                <div class="bookmark">
+                                    <ion-icon name="bookmark"></ion-icon>
+                                </div>
+
+                                <div class="rating">
+                                    <ion-icon name="star-outline"></ion-icon>
+                                    <span>8.5</span>
+                                </div>
+
+                                <div class="play">
+                                    <ion-icon name="play-circle-outline"></ion-icon>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <h3 class="card-title">Avengers: Endgame</h3>
+
+                            <div class="card-info">
+                                <span class="genre">Action/Sci-fi</span>
+                                <span class="year">2019</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="movie-card">
+                        <div class="card-head">
+                            <img src="https://i.postimg.cc/1X0h0yqy/ww84.jpg" alt="movie" class="card-img">
+
+                            <div class="card-overlay">
+
+                                <div class="bookmark">
+                                    <ion-icon name="bookmark"></ion-icon>
+                                </div>
+
+                                <div class="rating">
+                                    <ion-icon name="star-outline"></ion-icon>
+                                    <span>5.4</span>
+                                </div>
+
+                                <div class="play">
+                                    <ion-icon name="play-circle-outline"></ion-icon>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <h3 class="card-title">Wonder Woman 1984</h3>
+
+                            <div class="card-info">
+                                <span class="genre">Action/Adventure</span>
+                                <span class="year">2020</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="movie-card">
+                        <div class="card-head">
+                            <img src="https://i.postimg.cc/v85swtSC/captain-marvel.jpg" alt="movie" class="card-img">
+
+                            <div class="card-overlay">
+
+                                <div class="bookmark">
+                                    <ion-icon name="bookmark"></ion-icon>
+                                </div>
+
+                                <div class="rating">
+                                    <ion-icon name="star-outline"></ion-icon>
+                                    <span>5.4</span>
+                                </div>
+
+                                <div class="play">
+                                    <ion-icon name="play-circle-outline"></ion-icon>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <h3 class="card-title">Captain Marvel</h3>
+
+                            <div class="card-info">
+                                <span class="genre">Action/Sci-fi</span>
+                                <span class="year">2019</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="load-more">LOAD MORE</button>
+            </section>
+
+            <section class="category" id="category">
+                <h2 class="section-heading">Category</h2>
+
+                <div class="category-grid">
+                    <div class="category-card">
+                        <img src="https://i.postimg.cc/JzfWFmfC/action.jpg" alt="image" class="card-img">
+                        <div class="name">Action</div>
+                        <div class="total">100</div>
+                    </div>
+
+                    <div class="category-card">
+                        <img src="https://i.postimg.cc/CKpxqjL8/comedy.jpg" alt="image" class="card-img">
+                        <div class="name">Comedy</div>
+                        <div class="total">50</div>
+                    </div>
+
+                    <div class="category-card">
+                        <img src="https://i.postimg.cc/3rfrBMxY/thriller.webp" alt="image" class="card-img">
+                        <div class="name">Thriller</div>
+                        <div class="total">20</div>
+                    </div>
+
+                    <div class="category-card">
+                        <img src="https://i.postimg.cc/HkXpdV4k/horror.jpg" alt="image" class="card-img">
+                        <div class="name">Horror</div>
+                        <div class="total">80</div>
+                    </div>
+
+                    <div class="category-card">
+                        <img src="https://i.postimg.cc/qRRVhRnn/adventure.jpg" alt="image" class="card-img">
+                        <div class="name">Adventure</div>
+                        <div class="total">100</div>
+                    </div>
+
+                    <div class="category-card">
+                        <img src="https://i.postimg.cc/15pmZ8K5/animated.jpg" alt="image" class="card-img">
+                        <div class="name">Animation</div>
+                        <div class="total">50</div>
+                    </div>
+
+                    <div class="category-card">
+                        <img src="https://i.postimg.cc/XvX6Xq95/crime.jpg" alt="image" class="card-img">
+                        <div class="name">Crime</div>
+                        <div class="total">20</div>
+                    </div>
+
+                    <div class="category-card">
+                        <img src="https://i.postimg.cc/8568BYKP/sci-fi.jpg" alt="image" class="card-img">
+                        <div class="name">Sci-fi</div>
+                        <div class="total">80</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="live" id="live">
+                <h2 class="section-heading">Live TV Shows</h2>
+
+                <div class="live-grid">
+                    <div class="live-card">
+                        <div class="card-head">
+                            <img src="https://i.postimg.cc/m26wBrZJ/planet.jpg" alt="image" class="card-img">
+                            <div class="live-badge">LIVE</div>
+                            <div class="total-viewers">305K viewers</div>
+                            <div class="play">
+                                <ion-icon name="play-circle-outline"></ion-icon>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <img src="https://i.postimg.cc/YCzQjqtt/bbcamerica.jpg" alt="image" class="avatar">
+                            <h3 class="card-title">Planet Earth II <br> Season 1 - Islands</h3>
+                        </div>
+                    </div>
+
+                    <div class="live-card">
+                        <div class="card-head">
+                            <img src="https://i.postimg.cc/PrY8CrdP/got.jpg" alt="image" class="card-img">
+                            <div class="live-badge">LIVE</div>
+                            <div class="total-viewers">1.7M viewers</div>
+                            <div class="play">
+                                <ion-icon name="play-circle-outline"></ion-icon>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <img src="https://i.postimg.cc/ryWpJn3H/HBO-Logo-square.jpg" alt="image" class="avatar">
+                            <h3 class="card-title">Game of Thrones <br> Season 5 - Mother's Mercy</h3>
+                        </div>
+                    </div>
+
+                    <div class="live-card">
+                        <div class="card-head">
+                            <img src="https://i.postimg.cc/RVLZr3MQ/vikins.jpg" alt="image" class="card-img">
+                            <div class="live-badge">LIVE</div>
+                            <div class="total-viewers">468K viewers</div>
+                            <div class="play">
+                                <ion-icon name="play-circle-outline"></ion-icon>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <img src="https://i.postimg.cc/ryWpJn3H/HBO-Logo-square.jpg" alt="image" class="avatar">
+                            <h3 class="card-title">Vikings <br> Season 4 - What Might Have Been</h3>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <img src="https://i.postimg.cc/KvjKVZXj/logo.png" alt="image" class="footer-logo">
+                    <p class="slogan">Movies & TV Shows, Online Cinema, Movie Database HTML Template</p>
+
+                    <div class="social-link">
+                        <a href="#"><ion-icon name="logo-facebook"></ion-icon></a>
+                        <a href="#"><ion-icon name="logo-twitter"></ion-icon></a>
+                        <a href="#"><ion-icon name="logo-instagram"></ion-icon></a>
+                        <a href="#"><ion-icon name="logo-tiktok"></ion-icon></a>
+                        <a href="#"><ion-icon name="logo-youtube"></ion-icon></a>
+                    </div>
+                </div>
+
+                <div class="footer-links">
+                    <ul>
+                        <h4 class="link-heading">CineFlix</h4>
+
+                        <li class="link-item"><a href="#">About us</a></li>
+                        <li class="link-item"><a href="#">My profile</a></li>
+                        <li class="link-item"><a href="#">Pricing plans</a></li>
+                        <li class="link-item"><a href="#">Contacts</a></li>
+                    </ul>
+
+                    <ul>
+                        <h4 class="link-heading">Browse</h4>
+
+                        <li class="link-item"><a href="#">Live TV</a></li>
+                        <li class="link-item"><a href="#">Live News</a></li>
+                        <li class="link-item"><a href="#">Live Sports</a></li>
+                        <li class="link-item"><a href="#">Streaming Library</a></li>
+                    </ul>
+
+                    <ul>
+
+                        <li class="link-item"><a href="#">TV Shows</a></li>
+                        <li class="link-item"><a href="#">Movies</a></li>
+                        <li class="link-item"><a href="#">Kids</a></li>
+                        <li class="link-item"><a href="#">Collections</a></li>
+                    </ul>
+
+                    <ul>
+                        <h4 class="link-heading">Help</h4>
+
+                        <li class="link-item"><a href="#">Account & Billing</a></li>
+                        <li class="link-item"><a href="#">Plans & Pricing</a></li>
+                        <li class="link-item"><a href="#">Supported Devices</a></li>
+                        <li class="link-item"><a href="#">Accessibility</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-copyright">
+                <div class="copyright">
+                    <p>© Copyright 2024 CineFlix</p>
+                </div>
+
+                <div class="wrapper">
+                    <a href="#">Privacy policy</a>
+                    <a href="#">Terms and conditions</a>
+                </div>
+            </div>
+
+        </footer>
     </div>
 
-    <!-- Chat Area -->
-    <div class="chat-container">
-        <div id="chat-content" class="chat-content">
-            <!-- Messages will appear here -->
-        </div>
-    </div>
-
-    <!-- Bottom Bar -->
-    <form id="chat-form" class="bottom-bar">
-        <input id="user-input" type="text" placeholder="Ask anything..." autocomplete="off">
-        <button type="submit">Send</button>
-        <button type="button" class="mode-btn" id="think-btn">Think</button>
-    </form>
-
-    <!-- Quick Questions Bar -->
-    <div class="quick-questions">
-        <button class="quick-question-btn" data-question="What can you do?">What can you do?</button>
-        <button class="quick-question-btn" data-question="Tell me a joke">Tell me a joke</button>
-        <button class="quick-question-btn" data-question="What is the weather like?">Weather</button>
-    </div>
-
-    <script>
-        const chatContent = document.getElementById("chat-content");
-        const chatForm = document.getElementById("chat-form");
-        const userInput = document.getElementById("user-input");
-        const thinkBtn = document.getElementById("think-btn");
-        let isThinkMode = false;
-
-        const chatGPTLogo = "https://i.ibb.co/Z6dDQpwx/ncizgz.jpg";
-        const userLogo = "https://i.ibb.co/ssQNvBC/67373290.jpg";
-
-        function createMessageElement(message, fromUser, isLoading = false) {
-            const messageWrapper = document.createElement("div");
-            messageWrapper.classList.add("message", fromUser ? "user" : "bot");
-
-            const avatar = document.createElement("img");
-            avatar.src = fromUser ? userLogo : chatGPTLogo;
-            avatar.alt = fromUser ? "User" : "NEXT AI";
-            avatar.classList.add("avatar");
-            // Fallback if image fails to load, and ensure bubble content
-            avatar.onerror = () => {
-                avatar.classList.add("user-fallback");
-                avatar.innerHTML = "U"; // Initial of "User"
-                avatar.style.backgroundImage = "none";
-                avatar.style.width = "40px";
-                avatar.style.height = "40px";
-            };
-
-            const bubble = document.createElement("div");
-            bubble.classList.add("bubble");
-            if (isLoading) {
-                bubble.innerHTML = `<div class="dots">
-                                        <div class="dot"></div>
-                                        <div class="dot"></div>
-                                        <div class="dot"></div>
-                                    </div>`;
-            } else {
-                bubble.dataset.fullText = message;
-                bubble.textContent = message; // Force immediate text content
-            }
-
-            messageWrapper.appendChild(fromUser ? bubble : avatar);
-            messageWrapper.appendChild(fromUser ? avatar : bubble);
-            return messageWrapper;
-        }
-
-        async function fetchResponse(userMessage) {
-            const identityKeywords = ["developed", "trained", "made", "created", "built", "who"];
-            if (identityKeywords.some(keyword => userMessage.toLowerCase().includes(keyword))) {
-                return "I am NEXT AI, created by a passionate developer at extainai.github.io. My training is a collaborative effort with cutting-edge AI technologies, but I won’t bore you with the details—let’s focus on helping you instead!";
-            }
-
-            try {
-                const response = await fetch("https://backend.buildpicoapps.com/aero/run/llm-api?pk=v1-Z0FBQUFBQm5IZkJDMlNyYUVUTjIyZVN3UWFNX3BFTU85SWpCM2NUMUk3T2dxejhLSzBhNWNMMXNzZlp3c09BSTR6YW1Sc1BmdGNTVk1GY0liT1RoWDZZX1lNZlZ0Z1dqd3c9PQ==", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ prompt: userMessage })
-                });
-                if (!response.ok) throw new Error('Failed to fetch response');
-                const data = await response.json();
-                if (data.status === "success") return data.text;
-                throw new Error('Error in response data');
-            } catch (error) {
-                console.error("Error:", error);
-                return "There was an error. Please try again later.";
-            }
-        }
-
-        function typeWriter(element, text, isThinkMode) {
-            let index = 0;
-            element.textContent = ""; // Clear initial content
-            const length = text.length;
-            let speed;
-            if (isThinkMode) {
-                speed = 50; // Medium speed for Think mode
-            } else {
-                if (length <= 20) speed = 20; // 1-2 sec for short (up to 20 chars)
-                else if (length <= 50) speed = 50; // 2-3 sec for medium (20-50 chars)
-                else speed = 80; // 3-4 sec for long (over 50 chars)
-            }
-            const interval = setInterval(() => {
-                if (index < text.length) {
-                    element.textContent += text.charAt(index);
-                    index++;
-                } else {
-                    clearInterval(interval);
-                    element.classList.add("blink-cursor");
-                }
-            }, speed);
-        }
-
-        function thinkAnimation(element) {
-            let dots = "";
-            const interval = setInterval(() => {
-                dots = dots.length < 3 ? dots + "." : "";
-                element.textContent = "Thinking" + dots;
-                if (dots.length === 3) dots = "";
-            }, 500);
-            return interval;
-        }
-
-        let isSubmitting = false;
-        chatForm.addEventListener("submit", async (event) => {
-            event.preventDefault();
-            if (isSubmitting) return;
-            isSubmitting = true;
-
-            const userMessage = userInput.value.trim();
-            if (!userMessage) {
-                isSubmitting = false;
-                return;
-            }
-
-            // Ensure user's message is displayed immediately with proper styling
-            const userMessageElement = createMessageElement(userMessage, true);
-            console.log("User message created and appended:", userMessage, userMessageElement); // Enhanced debug log
-            chatContent.appendChild(userMessageElement);
-            userInput.value = "";
-            autoScroll();
-
-            const loadingMessage = createMessageElement("", false, true);
-            chatContent.appendChild(loadingMessage);
-            autoScroll();
-
-            let botResponse;
-            if (isThinkMode) {
-                const thinkBubble = createMessageElement("", false);
-                chatContent.appendChild(thinkBubble);
-                autoScroll();
-                const bubble = thinkBubble.querySelector(".bubble");
-                const thinkInterval = thinkAnimation(bubble);
-                await new Promise(resolve => setTimeout(resolve, 4000)); // 4-second thinking phase
-                clearInterval(thinkInterval);
-                botResponse = await fetchResponse(userMessage + " (processed with extra thought)");
-                chatContent.removeChild(thinkBubble);
-                const messageElement = createMessageElement(botResponse, false);
-                chatContent.appendChild(messageElement);
-                typeWriter(messageElement.querySelector(".bubble"), botResponse, true);
-            } else {
-                botResponse = await fetchResponse(userMessage);
-                const messageElement = createMessageElement(botResponse, false);
-                chatContent.appendChild(messageElement);
-                typeWriter(messageElement.querySelector(".bubble"), botResponse, false);
-            }
-
-            chatContent.removeChild(loadingMessage);
-            autoScroll();
-
-            isSubmitting = false;
-        });
-
-        function autoScroll() {
-            requestAnimationFrame(() => {
-                chatContent.scrollTop = chatContent.scrollHeight + 20;
-            });
-        }
-
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                const welcomeMessage = createMessageElement("Hello! How can I help you today?", false);
-                chatContent.appendChild(welcomeMessage);
-                const bubble = welcomeMessage.querySelector(".bubble");
-                typeWriter(bubble, bubble.dataset.fullText, false);
-                autoScroll();
-            }, 100);
-        });
-
-        thinkBtn.addEventListener('click', () => {
-            isThinkMode = !isThinkMode;
-            thinkBtn.style.background = isThinkMode ? '#00c6ff' : '#444';
-            thinkBtn.textContent = isThinkMode ? 'Thinking...' : 'Think';
-            alert(isThinkMode ? 'Think mode enabled!' : 'Think mode disabled!');
-        });
-
-        document.querySelectorAll('.quick-question-btn').forEach(button => {
-            button.addEventListener('click', () => {
-                const question = button.getAttribute('data-question');
-                userInput.value = question;
-                chatForm.dispatchEvent(new Event('submit'));
-            });
-        });
-
-        // Blinking cursor style
-        const style = document.createElement('style');
-        style.textContent = `
-            .blink-cursor::after {
-                content: '|';
-                animation: blink 0.7s step-end infinite;
-            }
-            @keyframes blink {
-                50% { opacity: 0; }
-            }
-        `;
-        document.head.appendChild(style);
-    </script>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
